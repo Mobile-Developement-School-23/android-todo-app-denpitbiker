@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ds">
+        <attr name="background_color" format="color"/>
+        <attr name="color_delete_inactive" format="color"/>
+        <attr name="color_delete_active" format="color"/>
+    </declare-styleable>
+</resources>
