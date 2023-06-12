@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -20,6 +21,7 @@ import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.fragment.app.Fragment
+import com.advancedsolutionsdevelopers.todoapp.recyclerView.TodoItem
 import com.google.android.material.appbar.AppBarLayout
 import java.time.LocalDate
 
@@ -59,6 +61,10 @@ class TaskFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val curDate = LocalDate.now()
+        var deadlineYear: Int = 0
+        var deadlineMonth: Int = 0
+        var deadlineDay: Int = 0
+        val priorities = resources.getStringArray(R.array.priority)
         val closeButton: ImageButton = view.findViewById(R.id.close_button)
         val saveButton: TextView = view.findViewById(R.id.save_button)
         val deleteButton: LinearLayout = view.findViewById(R.id.delete_button)
@@ -70,6 +76,10 @@ class TaskFragment : Fragment() {
         val taskAppBar: AppBarLayout = view.findViewById(R.id.task_app_bar)
         val deleteTextView: TextView = view.findViewById(R.id.delete_textview)
         val deleteImageView: ImageView = view.findViewById(R.id.delete_imageview)
+        val spinnerAdapter =
+            ArrayAdapter(view.context, android.R.layout.simple_spinner_item, priorities)
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        prioritySpinner.adapter = spinnerAdapter
         taskScrollView.setOnScrollChangeListener { _, _, scrollY, _, _ ->
             if (scrollY > 0) {
                 taskAppBar.elevation = 10f
@@ -101,6 +111,9 @@ class TaskFragment : Fragment() {
         val datePickerListener =
             OnDateSetListener { _, selectedYear, selectedMonth, selectedDay ->
                 doUntilButton.text = "$selectedDay.${selectedMonth + 1}.$selectedYear"
+                deadlineYear = selectedYear
+                deadlineMonth = selectedMonth + 1
+                deadlineDay = selectedDay
             }
         val datePickerDialog = DatePickerDialog(
             view.context,
@@ -126,6 +139,23 @@ class TaskFragment : Fragment() {
                 doUntilButton.visibility = View.INVISIBLE
                 doUntilButton.isClickable = false
             }
+        }
+        saveButton.setOnClickListener {
+            //TODO isCompleted мб completed etc.
+            val x = TodoItem(
+                9,
+                taskEditText.text.toString(),
+                prioritySpinner.selectedItemPosition.toByte(),
+                false,
+                curDate,
+                if (doUntilSwitch.isActivated) LocalDate.of(
+                    deadlineYear,
+                    deadlineMonth,
+                    deadlineDay
+                ) else null,
+                curDate
+            )
+            closeButton.callOnClick()
         }
     }
 

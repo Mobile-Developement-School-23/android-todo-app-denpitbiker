@@ -1,11 +1,15 @@
 package com.advancedsolutionsdevelopers.todoapp.recyclerView
 
 import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.view.View
 import android.widget.CheckBox
 import android.widget.TextView
+import androidx.appcompat.widget.ThemeUtils.getThemeAttrColor
 import androidx.recyclerview.widget.RecyclerView
 import com.advancedsolutionsdevelopers.todoapp.R
+import com.advancedsolutionsdevelopers.todoapp.TaskFragment
 
 
 class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
