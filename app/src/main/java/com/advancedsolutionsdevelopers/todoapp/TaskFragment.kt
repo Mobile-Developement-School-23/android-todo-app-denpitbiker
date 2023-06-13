@@ -18,35 +18,26 @@ import android.widget.Spinner
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.AttrRes
-import androidx.annotation.ColorInt
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModelProvider
 import com.advancedsolutionsdevelopers.todoapp.recyclerView.TodoItem
 import com.google.android.material.appbar.AppBarLayout
 import java.time.LocalDate
+import java.util.ArrayList
 
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [TaskFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class TaskFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var activityContext: Context
+    private var taskId:Long =-1
+    private var taskIndex:Int=-1
+    lateinit var viewModel: TasksListViewModel
+    lateinit var data:ArrayList<TodoItem>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+        viewModel = ViewModelProvider(requireActivity())[TasksListViewModel::class.java]
+        data= viewModel.tasks.value!!
     }
 
     override fun onCreateView(
@@ -60,10 +51,11 @@ class TaskFragment : Fragment() {
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        activityContext = requireContext()
         val curDate = LocalDate.now()
-        var deadlineYear: Int = 0
-        var deadlineMonth: Int = 0
-        var deadlineDay: Int = 0
+        var deadlineYear = 0
+        var deadlineMonth = 0
+        var deadlineDay = 0
         val priorities = resources.getStringArray(R.array.priority)
         val closeButton: ImageButton = view.findViewById(R.id.close_button)
         val saveButton: TextView = view.findViewById(R.id.save_button)
@@ -78,6 +70,25 @@ class TaskFragment : Fragment() {
         val deleteImageView: ImageView = view.findViewById(R.id.delete_imageview)
         val spinnerAdapter =
             ArrayAdapter(view.context, android.R.layout.simple_spinner_item, priorities)
+        if(arguments!=null){
+            taskId= requireArguments().getLong("taskId",-1)
+            //Да, не красиво, но бд-то нет
+            for (i in 0 until data.size){
+                if(data[i].id==taskId){
+                    taskIndex=i
+                    break
+                }
+            }
+            taskEditText.setText(data[taskIndex].text)
+            prioritySpinner.setSelection(data[taskIndex].priority.toInt())
+            doUntilSwitch.isChecked= data[taskIndex].deadlineDate!=null
+            if(doUntilSwitch.isChecked) {
+                doUntilButton.visibility = View.VISIBLE
+                doUntilButton.isClickable = true
+                doUntilButton.text =
+                    "${data[taskIndex].deadlineDate!!.dayOfMonth}.${data[taskIndex].deadlineDate!!.monthValue}.${data[taskIndex].deadlineDate!!.year}"
+            }
+        }
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         prioritySpinner.adapter = spinnerAdapter
         taskScrollView.setOnScrollChangeListener { _, _, scrollY, _, _ ->
@@ -87,8 +98,7 @@ class TaskFragment : Fragment() {
                 taskAppBar.elevation = 0f
             }
         }
-        // TODO: Параметр, который будет влиять на цвет и поведение
-        if (true) {
+        if (taskId!=-1L) {
             deleteButton.isClickable = true
             deleteButton.setOnClickListener {
                 Toast.makeText(
@@ -96,17 +106,26 @@ class TaskFragment : Fragment() {
                     "Deleted",
                     Toast.LENGTH_SHORT
                 ).show()
+                data.removeAt(taskIndex)
                 closeButton.callOnClick()
             }
-            deleteTextView.setTextColor(getThemeAttrColor(view.context, R.attr.color_delete_active))
+            deleteTextView.setTextColor(HandyFunctions.getThemeAttrColor(view.context, R.attr.color_delete_active))
             deleteImageView.setColorFilter(
-                getThemeAttrColor(
+                HandyFunctions.getThemeAttrColor(
                     view.context,
                     R.attr.color_delete_active
                 )
             )
         } else {
             deleteButton.isClickable = false
+            deleteTextView.setTextColor(HandyFunctions.getThemeAttrColor(view.context, R.attr.color_delete_inactive))
+            deleteImageView.setColorFilter(
+                HandyFunctions.getThemeAttrColor(
+                    view.context,
+                    R.attr.color_delete_inactive
+                )
+            )
+            doUntilButton.text = "${curDate.dayOfMonth}.${curDate.monthValue}.${curDate.year}"
         }
         val datePickerListener =
             OnDateSetListener { _, selectedYear, selectedMonth, selectedDay ->
@@ -122,8 +141,6 @@ class TaskFragment : Fragment() {
             curDate.monthValue - 1,
             curDate.dayOfMonth
         )
-
-        doUntilButton.text = "${curDate.dayOfMonth}.${curDate.monthValue}.${curDate.year}"
         doUntilButton.setOnClickListener {
 
             datePickerDialog.show()
@@ -142,50 +159,44 @@ class TaskFragment : Fragment() {
         }
         saveButton.setOnClickListener {
             //TODO isCompleted мб completed etc.
-            val x = TodoItem(
-                9,
-                taskEditText.text.toString(),
-                prioritySpinner.selectedItemPosition.toByte(),
-                false,
-                curDate,
-                if (doUntilSwitch.isActivated) LocalDate.of(
-                    deadlineYear,
-                    deadlineMonth,
-                    deadlineDay
-                ) else null,
-                curDate
-            )
+            if(taskIndex==-1){
+                val x = TodoItem(
+                    data[data.size-1].id+1,//Да, так нельзя!!!
+                    taskEditText.text.toString(),
+                    prioritySpinner.selectedItemPosition.toByte(),
+                    false,
+                    curDate,
+                    if (doUntilSwitch.isChecked) LocalDate.of(
+                        deadlineYear,
+                        deadlineMonth,
+                        deadlineDay
+                    ) else null,
+                    curDate
+                )
+                data.add(x)
+            }else{
+                val x = TodoItem(
+                    taskId,
+                    taskEditText.text.toString(),
+                    prioritySpinner.selectedItemPosition.toByte(),
+                    data[taskIndex].isCompleted,
+                    data[taskIndex].creationDate,
+                    if (doUntilSwitch.isChecked) LocalDate.of(
+                        deadlineYear,
+                        deadlineMonth,
+                        deadlineDay
+                    ) else null,
+                    curDate
+                )
+                data[taskIndex]=x
+            }
+
             closeButton.callOnClick()
         }
     }
 
-    @ColorInt
-    private fun getThemeAttrColor(context: Context, @AttrRes colorAttr: Int): Int {
-        val array = context.obtainStyledAttributes(null, intArrayOf(colorAttr))
-        return try {
-            array.getColor(0, 0)
-        } finally {
-            array.recycle()
-        }
-    }
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment TaskFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            TaskFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.tasks.value=data
     }
 }

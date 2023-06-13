@@ -1,12 +1,24 @@
 package com.advancedsolutionsdevelopers.todoapp
 
 import com.advancedsolutionsdevelopers.todoapp.recyclerView.TodoItem
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import java.time.LocalDate
 import java.util.ArrayList
 import java.util.Calendar
 import kotlin.random.Random
 
 class TodoItemsRepository {
+    //TODO добавление в репозиторий
+    //Flow, который пока не используется
+    val latestTasks: Flow<ArrayList<TodoItem>> = flow {
+        while(true) {
+            val latestNews = getTasks()
+            emit(latestNews)
+            delay(5000)
+        }
+    }
     //Да, я в курсе про многопоточность!!! Просто без реального внешнего хранилища городить тут
     //всякое не очень хотелось. А 30 элементов не вызовут фриз системы:)
     fun getTasks(): ArrayList<TodoItem> {
@@ -16,7 +28,7 @@ class TodoItemsRepository {
             arr.add(
                 TodoItem(
                     i.toLong(),
-                    "Privet".repeat(random.nextInt(1, 21)),
+                    "Privet".repeat(random.nextInt(1, 41)),
                     random.nextInt(0, 3).toByte(),
                     random.nextBoolean(),
                     LocalDate.of(
@@ -44,5 +56,8 @@ class TodoItemsRepository {
             )
         )
         return arr
+    }
+    fun addItem(){
+
     }
 }

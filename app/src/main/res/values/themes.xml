@@ -1,29 +1,40 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Theme.ToDoApp" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/back_primary_light</item>
+        <item name="colorPrimary">@color/back_primary</item>
         <item name="android:statusBarColor">@color/transparent</item>
-        <item name="backgroundColor">@color/back_primary_light</item>
-        <item name="android:windowBackground">@color/back_primary_light</item>
+        <item name="backgroundColor">@color/back_primary</item>
+        <item name="android:windowBackground">@color/back_primary</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:textColor">@color/label_primary_light</item>
-        <item name="android:textColorSecondary">@color/label_secondary_light</item>
-        <item name="android:textColorTertiary">@color/label_tertiary_light</item>
-        <item name="android:textColorHint">@color/label_tertiary_light</item>
-        <item name="dividerColor">@color/support_separator_light</item>
-        <item name="colorControlActivated">@color/color_blue_light</item>
+        <item name="android:textColor">@color/label_primary</item>
+        <item name="android:textColorSecondary">@color/label_secondary</item>
+        <item name="android:textColorTertiary">@color/label_tertiary</item>
+        <item name="android:textColorHint">@color/label_tertiary</item>
+        <item name="dividerColor">@color/support_separator</item>
+        <item name="colorControlActivated">@color/color_blue</item>
         <item name="android:datePickerDialogTheme">@style/DatePicker</item>
-        <item name="color_delete_active">@color/color_red_light</item>
-        <item name="color_delete_inactive">@color/label_tertiary_light</item>
+        <item name="color_delete_active">@color/color_red</item>
+        <item name="color_delete_inactive">@color/label_tertiary</item>
+        <item name="support_separator_color">@color/support_separator</item>
+        <item name="base_green">@color/color_green</item>
+        <item name="label_primary">@color/label_primary</item>
     </style>
     <style name="BlueItems">
-        <item name="colorPrimary">@color/color_blue_light</item>
-        <item name="android:textColor">@color/color_blue_light</item>
+        <item name="colorPrimary">@color/color_blue</item>
+        <item name="android:textColor">@color/color_blue</item>
     </style>
     <style name="DatePicker" parent="Theme.AppCompat.Light.Dialog">
-        <item name="colorPrimary">@color/color_blue_light</item>
-        <item name="colorAccent">@color/color_blue_light</item>
-        <item name="android:textColor">@color/color_blue_light</item>
+        <item name="colorPrimary">@color/color_blue</item>
+        <item name="colorAccent">@color/color_blue</item>
+        <item name="android:textColor">@color/color_blue</item>
         <item name="android:background">@color/transparent</item>
+    </style>
+    <style name="ExpandedAppBar" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textSize">32sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="CollapsedAppBar" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">normal</item>
     </style>
 </resources>

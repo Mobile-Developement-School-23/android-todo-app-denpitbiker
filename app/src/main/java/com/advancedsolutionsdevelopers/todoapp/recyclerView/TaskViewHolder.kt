@@ -1,30 +1,16 @@
 package com.advancedsolutionsdevelopers.todoapp.recyclerView
 
-import android.graphics.Paint
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
 import android.view.View
 import android.widget.CheckBox
 import android.widget.TextView
-import androidx.appcompat.widget.ThemeUtils.getThemeAttrColor
 import androidx.recyclerview.widget.RecyclerView
 import com.advancedsolutionsdevelopers.todoapp.R
-import com.advancedsolutionsdevelopers.todoapp.TaskFragment
 
 
-class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    val isCompleteCheckbox = itemView.findViewById<CheckBox>(R.id.is_complete_checkbox)
-    val taskTextTextview = itemView.findViewById<TextView>(R.id.task_text_textview)
-    val deadlineDataTextview = itemView.findViewById<TextView>(R.id.deadline_date_textview)
-    fun onBind(task: TodoItem){
-        isCompleteCheckbox.isChecked = task.isCompleted
-        taskTextTextview.text = task.text
-        if(task.deadlineDate!=null)
-            deadlineDataTextview.text = task.deadlineDate.toString()
-        if(task.isCompleted) {
-            taskTextTextview.paintFlags = taskTextTextview.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-        }else{
-            taskTextTextview.paintFlags = taskTextTextview.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-        }
-    }
+class TaskViewHolder(itemView: View) :
+    RecyclerView.ViewHolder(itemView) {
+    val isCompleteCheckbox: CheckBox = itemView.findViewById(R.id.is_complete_checkbox)
+    val taskTextTextview: TextView = itemView.findViewById(R.id.task_text_textview)
+    val deadlineDataTextview: TextView = itemView.findViewById(R.id.deadline_date_textview)
+
 }

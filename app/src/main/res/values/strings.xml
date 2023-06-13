@@ -5,8 +5,9 @@
     <string name="priority">Priority</string>
     <string name="do_until">Do until</string>
     <string name="delete">Delete</string>
+    <string name="tasks_done">Tasks done - </string>
     <string-array name="priority">
-        <item>None</item>
+        <item>Standard</item>
         <item>Low</item>
         <item>!! High</item>
     </string-array>
