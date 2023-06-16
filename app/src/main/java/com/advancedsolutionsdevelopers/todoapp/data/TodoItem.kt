@@ -1,14 +1,14 @@
-package com.advancedsolutionsdevelopers.todoapp.recyclerView
+package com.advancedsolutionsdevelopers.todoapp.data
 
 import java.time.LocalDate
 
-//Что ты тут делаешь?)
 data class TodoItem(
-    val id: Long,
+    val id: String,
     var text: String,
-    var priority: Byte,
+    var priority: Priority,
     var isCompleted: Boolean,
     var creationDate: LocalDate,
     var deadlineDate: LocalDate?,
     var lastEditDate: LocalDate?
 )
+

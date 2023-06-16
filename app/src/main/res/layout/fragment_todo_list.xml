@@ -10,6 +10,7 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="170dp"
+        android:id="@+id/appbar_layout"
         android:fitsSystemWindows="false">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
@@ -25,7 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:id="@+id/toolbar"
-                app:title="My tasks"
+                app:title="@string/my_tasks"
                 app:layout_collapseMode="pin">
             </androidx.appcompat.widget.Toolbar>
             <TextView
@@ -46,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/change_visibility_button"
                 android:src="@drawable/visible"
-                android:background="@color/transparent"
+                android:background="?attr/selectableItemBackground"
                 app:layout_collapseMode="pin"
                 android:layout_gravity="end|bottom"
                 android:layout_marginBottom="20dp"
@@ -54,13 +55,22 @@
                 app:tint="?attr/colorControlActivated" />
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv"
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/rv_background_cardview"
+        android:layout_marginHorizontal="10dp"
+        app:cardElevation="5dp"
+        app:cardBackgroundColor="?attr/background_color_secondary"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        />
+        app:cardCornerRadius="10dp">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            />
+    </androidx.cardview.widget.CardView>
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/floatingActionButton"
         android:layout_width="wrap_content"

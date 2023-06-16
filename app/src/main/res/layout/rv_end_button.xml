@@ -1,32 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-     android:layout_width="match_parent"
     android:layout_marginTop="20dp"
+    android:clickable="true"
     android:background="?attr/selectableItemBackground"
     android:orientation="horizontal">
     <CheckBox
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:id="@+id/is_complete_checkbox"/>
+        android:clickable="false"
+        android:id="@+id/is_complete_checkbox"
+        android:visibility="invisible" />
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="10dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:clickable="false"
+        android:paddingHorizontal="10dp">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:ellipsize="end"
+            android:clickable="false"
             android:id="@+id/task_text_textview"
-            android:maxLines="3"/>
+            android:text="@string/add_new_task"
+            android:textColor="?attr/android:textColorTertiary"
+            android:textSize="16sp" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/deadline_date_textview"
-            android:textColor="?attr/android:textColorTertiary"/>
+            />
     </LinearLayout>
 </LinearLayout>

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".TaskFragment">
+    tools:context=".taskFragment.TaskFragment">
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -19,8 +19,9 @@
             android:id="@+id/close_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@color/transparent"
-            android:src="@drawable/close" />
+            android:src="@drawable/close"
+            android:background="?attr/selectableItemBackground"
+            app:tint="?attr/label_primary" />
 
         <TextView
             android:id="@+id/save_button"
@@ -29,6 +30,7 @@
             android:layout_gravity="end"
             android:textSize="14sp"
             android:layout_marginEnd="20dp"
+            android:background="?attr/selectableItemBackground"
             android:text="@string/save"
             style="@style/BlueItems"/>
     </Toolbar>
@@ -48,6 +50,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="20dp"
                 android:minHeight="100dp"
+                app:cardBackgroundColor="?attr/background_color_secondary"
                 app:cardElevation="5dp"
                 app:cardCornerRadius="10dp">
 
@@ -58,26 +61,35 @@
                     android:background="@color/transparent"
                     android:hint="@string/i_need_to_do"
                     android:textSize="16sp"
+                    android:textColor="@color/label_primary"
                     android:paddingHorizontal="20dp"
                     android:paddingVertical="20dp" />
             </androidx.cardview.widget.CardView>
-
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:textSize="16sp"
-                android:text="@string/priority" />
+                android:id="@+id/priority_popup_menu_button"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:textSize="16sp"
+                    android:clickable="false"
+                    android:text="@string/priority" />
 
-            <Spinner
-                android:id="@+id/priority_spinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="?attr/backgroundColor"
-                android:textSize="14sp"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginBottom="10dp"/>
-
+                <TextView
+                    android:id="@+id/priority_textview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    android:textColor="?attr/android:textColorTertiary"
+                    android:textSize="14sp"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginBottom="10dp"/>
+            </LinearLayout>
             <View
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
@@ -90,8 +102,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginTop="20dp"
+                android:text="@string/do_until"
+                android:textColor="?attr/label_primary"
                 android:textSize="16sp"
-                android:text="@string/do_until" />
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
 
             <TextView
                 android:id="@+id/calendar_button"
@@ -116,6 +130,7 @@
                 android:layout_height="wrap_content"
                 android:clickable="true"
                 android:id="@+id/delete_button"
+                android:background="?attr/selectableItemBackground"
                 android:orientation="horizontal">
                 <ImageView
                     android:layout_width="wrap_content"

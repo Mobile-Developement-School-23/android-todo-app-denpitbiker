@@ -7,5 +7,6 @@
         <attr name="support_separator_color" format="color"/>
         <attr name="base_green" format="color"/>
         <attr name="label_primary" format="color"/>
+        <attr name="background_color_secondary" format="color"/>
     </declare-styleable>
 </resources>
