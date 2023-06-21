@@ -1,7 +1,9 @@
-package com.advancedsolutionsdevelopers.todoapp.recyclerView
+package com.advancedsolutionsdevelopers.todoapp.todoListFragment.recyclerView
 
 import androidx.recyclerview.widget.DiffUtil
+import com.advancedsolutionsdevelopers.todoapp.data.TodoItem
 
+//Используется для оптимального обновления recyclerview
 class TasksDiffUtilCallback(
     private var oldList: List<TodoItem>,
     private var newList: List<TodoItem>

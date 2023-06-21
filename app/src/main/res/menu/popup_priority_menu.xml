@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/standard_priority_button"
+        android:title="@string/standard" />
+    <item
+        android:id="@+id/low_priority_button"
+        android:orderInCategory="1"
+        android:title="@string/low" />
+    <item
+        android:id="@+id/high_priority_button"
+        android:title="@string/high"
+        android:orderInCategory="2"
+        />
+</menu>

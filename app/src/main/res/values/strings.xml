@@ -5,10 +5,26 @@
     <string name="priority">Priority</string>
     <string name="do_until">Do until</string>
     <string name="delete">Delete</string>
-    <string name="tasks_done">Tasks done - </string>
+    <string name="tasks_done">Tasks done ―ㅤ</string>
+    <string name="add_new_task">Add new task</string>
+    <string name="enter_something_first">Enter something first!</string>
+    <string name="deleted">Deleted</string>
+    <string name="my_tasks">My tasks</string>
+    <string name="standard">Standard</string>
+    <string name="low">⬇️Low</string>
+    <string name="high">‼️HIGH</string>
+    <string name="actions">Actions?</string>
+    <string name="toast_2_u">Toast 2 U!(Click)</string>
+    <string name="goofy_ahh_string">🫠🥴🤪🫡🫣</string>
+    <string name="continue_text">Continue</string>
     <string-array name="priority">
         <item>Standard</item>
-        <item>Low</item>
-        <item>!! High</item>
+        <item>⬇️Low</item>
+        <item>‼️HIGH</item>
+    </string-array>
+    <string-array name="view_pager_text">
+        <item>Hello!\n Let me introduce you my ToDo App:)</item>
+        <item>It\'s made with ♥️🍕😹</item>
+        <item>So, let\'s get started!!!</item>
     </string-array>
 </resources>

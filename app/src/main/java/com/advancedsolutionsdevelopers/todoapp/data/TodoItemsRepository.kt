@@ -1,6 +1,5 @@
-package com.advancedsolutionsdevelopers.todoapp
+package com.advancedsolutionsdevelopers.todoapp.data
 
-import com.advancedsolutionsdevelopers.todoapp.recyclerView.TodoItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -11,14 +10,19 @@ import kotlin.random.Random
 
 class TodoItemsRepository {
     //TODO добавление в репозиторий
-    //Flow, который пока не используется
+    //Flow, который пока не используется тк НЕТ СЕРВЕРА
     val latestTasks: Flow<ArrayList<TodoItem>> = flow {
-        while(true) {
+        while (true) {
             val latestNews = getTasks()
             emit(latestNews)
             delay(5000)
         }
     }
+
+    fun addItem(item: TodoItem) {
+        //Нет сервера - нет реализации функции
+    }
+
     //Да, я в курсе про многопоточность!!! Просто без реального внешнего хранилища городить тут
     //всякое не очень хотелось. А 30 элементов не вызовут фриз системы:)
     fun getTasks(): ArrayList<TodoItem> {
@@ -27,37 +31,32 @@ class TodoItemsRepository {
         for (i in 0..random.nextInt(11, 30)) {
             arr.add(
                 TodoItem(
-                    i.toLong(),
+                    i.toString(),
                     "Privet".repeat(random.nextInt(1, 41)),
-                    random.nextInt(0, 3).toByte(),
+                    Priority.values()[random.nextInt(0, 3)],
                     random.nextBoolean(),
                     LocalDate.of(
-                        2023,
-                        random.nextInt(1, 13),
-                        random.nextInt(1, 29)
+                        2023, random.nextInt(1, 13), random.nextInt(1, 29)
                     ),
-                    if (random.nextBoolean())
-                        null
-                    else
-                        LocalDate.of(
-                            2023,
-                            random.nextInt(1, 13),
-                            random.nextInt(1, 29)
-                        ),null
+                    if (random.nextBoolean()) null
+                    else LocalDate.of(
+                        2023, random.nextInt(1, 13), random.nextInt(1, 29)
+                    ),
+                    null
                 )
             )
         }
         arr.add(
             TodoItem(
-                777L, "Итальянская пицца, как же прекрасно тобою поживится\n" +
-                        "Это то, что я люблю поутру и не только\n" +
-                        "Это только я и не только я", 2, false,
-                LocalDate.of(2023,6,12), LocalDate.of(2023,6,12), null
+                "777",
+                "Итальянская пицца, как же прекрасно тобою поживится\n" + "Это то, что я люблю поутру и не только\n" + "Это только я и не только я",
+                Priority.High,
+                false,
+                LocalDate.of(2023, 6, 12),
+                LocalDate.of(2023, 6, 12),
+                null
             )
         )
         return arr
-    }
-    fun addItem(){
-
     }
 }

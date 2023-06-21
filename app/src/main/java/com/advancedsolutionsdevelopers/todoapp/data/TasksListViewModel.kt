@@ -1,15 +1,14 @@
-package com.advancedsolutionsdevelopers.todoapp
+package com.advancedsolutionsdevelopers.todoapp.data
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.advancedsolutionsdevelopers.todoapp.recyclerView.TodoItem
 import java.util.ArrayList
 
 class TasksListViewModel : ViewModel() {
     var tasks: MutableLiveData<ArrayList<TodoItem>> = MutableLiveData(arrayListOf())
-    fun deleteItem(index: Int) {
+    fun deleteItem(item: TodoItem) {
         val tmp = tasks.value!!
-        tmp.removeAt(index)
-        tasks.value= tmp
+        tmp.remove(item)
+        tasks.value = tmp
     }
 }

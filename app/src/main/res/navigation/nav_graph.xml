@@ -7,19 +7,17 @@
 
     <fragment
         android:id="@+id/todoListFragment"
-        android:name="com.advancedsolutionsdevelopers.todoapp.TodoListFragment"
+        android:name="com.advancedsolutionsdevelopers.todoapp.todoListFragment.TodoListFragment"
         android:label="TodoListFragment" >
         <action
             android:id="@+id/action_todoListFragment_to_taskFragment"
-            app:destination="@id/taskFragment" />
+            app:destination="@id/taskFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:popExitAnim="@anim/nav_default_exit_anim" />
     </fragment>
     <fragment
         android:id="@+id/taskFragment"
-        android:name="com.advancedsolutionsdevelopers.todoapp.TaskFragment"
+        android:name="com.advancedsolutionsdevelopers.todoapp.taskFragment.TaskFragment"
         android:label="fragment_task"
-        tools:layout="@layout/fragment_task" >
-        <action
-            android:id="@+id/action_taskFragment_to_todoListFragment"
-            app:destination="@id/todoListFragment" />
-    </fragment>
+        tools:layout="@layout/fragment_task" />
 </navigation>
