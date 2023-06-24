@@ -1,17 +1,14 @@
 package com.advancedsolutionsdevelopers.todoapp.todoListFragment
 
-import android.graphics.Canvas
-import android.graphics.Rect
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.appcompat.widget.Toolbar
 import androidx.cardview.widget.CardView
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
@@ -20,23 +17,26 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.advancedsolutionsdevelopers.todoapp.R
-import com.advancedsolutionsdevelopers.todoapp.data.HandyFunctions
 import com.advancedsolutionsdevelopers.todoapp.data.HandyFunctions.Companion.dpToFloat
+import com.advancedsolutionsdevelopers.todoapp.data.HandyFunctions.Companion.makeSnackbar
 import com.advancedsolutionsdevelopers.todoapp.data.TasksListViewModel
 import com.advancedsolutionsdevelopers.todoapp.data.TodoItem
 import com.advancedsolutionsdevelopers.todoapp.todoListFragment.appbar.AppBarStateChangeListener
 import com.advancedsolutionsdevelopers.todoapp.todoListFragment.recyclerView.SwipeCallback
 import com.advancedsolutionsdevelopers.todoapp.todoListFragment.recyclerView.TaskAdapter
-import com.advancedsolutionsdevelopers.todoapp.todoListFragment.recyclerView.TaskViewHolder
+import com.advancedsolutionsdevelopers.todoapp.todoListFragment.recyclerView.TasksScrollListener
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlin.math.roundToInt
+import com.google.android.material.snackbar.Snackbar
 
 
 //передаю привет всем, кто ...устал
 class TodoListFragment : Fragment() {
     lateinit var recyclerView: RecyclerView
+    lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    lateinit var coordLayout: CoordinatorLayout
     lateinit var toolbar: Toolbar
     lateinit var visibilityButton: ImageButton
     lateinit var fab: FloatingActionButton
@@ -107,6 +107,8 @@ class TodoListFragment : Fragment() {
 
     private fun findViews(parent: View) {
         toolbar = parent.findViewById(R.id.toolbar)
+        swipeRefreshLayout = parent.findViewById(R.id.swipe_refresh_layout)
+        coordLayout = parent.findViewById(R.id.coord_layout)
         appbarLayout = parent.findViewById(R.id.appbar_layout)
         recyclerView = parent.findViewById(R.id.rv)
         rvBackgroundCard = parent.findViewById(R.id.rv_background_cardview)
@@ -134,6 +136,13 @@ class TodoListFragment : Fragment() {
         }
         fab.setOnClickListener {
             navController.navigate(R.id.action_todoListFragment_to_taskFragment)
+        }
+        recyclerView.addOnScrollListener(TasksScrollListener(swipeRefreshLayout))
+        swipeRefreshLayout.setOnRefreshListener {
+            //TODO snackbar color + action
+            makeSnackbar(coordLayout,R.string.enter_something_first)
+
+            swipeRefreshLayout.isRefreshing=false
         }
     }
 }
