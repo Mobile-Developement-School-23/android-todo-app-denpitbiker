@@ -1,7 +1,6 @@
 package com.advancedsolutionsdevelopers.todoapp
 
 import android.app.Application
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -9,8 +8,8 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.advancedsolutionsdevelopers.todoapp.data.BackgroundSyncWorker
-import com.yandex.authsdk.YandexAuthOptions
-import com.yandex.authsdk.YandexAuthSdk
+import com.advancedsolutionsdevelopers.todoapp.data.Constant.worker_name
+import com.advancedsolutionsdevelopers.todoapp.data.TodoItemsRepository
 import java.util.concurrent.TimeUnit
 
 
@@ -34,6 +33,6 @@ class ToDoApp : Application() {
         ).setConstraints(constraints).setBackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.MINUTES)
             .build()
         WorkManager.getInstance(applicationContext)
-            .enqueueUniquePeriodicWork("sync", ExistingPeriodicWorkPolicy.REPLACE, myWorkRequest)
+            .enqueueUniquePeriodicWork(worker_name, ExistingPeriodicWorkPolicy.UPDATE, myWorkRequest)
     }
 }

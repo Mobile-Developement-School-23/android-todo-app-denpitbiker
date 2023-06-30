@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.advancedsolutionsdevelopers.todoapp.R
 import com.advancedsolutionsdevelopers.todoapp.data.HandyFunctions
 import com.advancedsolutionsdevelopers.todoapp.data.TodoItem
-import java.time.LocalDate
 
 
 class TaskViewHolder(itemView: View) :
@@ -18,7 +17,7 @@ class TaskViewHolder(itemView: View) :
     val isCompleteCheckbox: CheckBox = itemView.findViewById(R.id.is_complete_checkbox)
     val taskTextTextview: TextView = itemView.findViewById(R.id.task_text_textview)
     val deadlineDataTextview: TextView = itemView.findViewById(R.id.deadline_date_textview)
-    fun onBind(task: TodoItem, curDate: LocalDate) {
+    fun onBind(task: TodoItem, curDate: Long) {
         taskTextTextview.setTextColor(
             HandyFunctions.getThemeAttrColor(
                 itemView.context,
@@ -35,7 +34,7 @@ class TaskViewHolder(itemView: View) :
             taskTextTextview.paintFlags =
                 taskTextTextview.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
             val isExpired =
-                task.deadlineDate != null && task.deadlineDate!!.toEpochDay() < curDate.toEpochDay()
+                task.deadlineDate != null && task.deadlineDate!! < curDate
             isCompleteCheckbox.buttonDrawable?.colorFilter = PorterDuffColorFilter(
                 HandyFunctions.getThemeAttrColor(
                     itemView.context,

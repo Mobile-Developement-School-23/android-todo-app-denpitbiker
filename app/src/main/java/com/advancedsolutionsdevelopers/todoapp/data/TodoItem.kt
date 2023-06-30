@@ -1,14 +1,23 @@
 package com.advancedsolutionsdevelopers.todoapp.data
 
-import java.time.LocalDate
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
+@Entity
+@Serializable
 data class TodoItem(
-    val id: String,
+    @PrimaryKey val id: String,
     var text: String,
-    var priority: Priority,
-    var isCompleted: Boolean,
-    var creationDate: LocalDate,
-    var deadlineDate: LocalDate?,
-    var lastEditDate: LocalDate?
+    @SerialName("importance") var priority: Priority,
+    @SerialName("done") var isCompleted: Boolean,
+    @SerialName("created_at") var creationDate: Long,
+    @SerialName("changed_at") var lastEditDate: Long,
+    @SerialName("last_updated_by") var lastUpdatedBy: String,
+    @Transient var isDeleted: Boolean = false,
+    @SerialName("deadline") var deadlineDate: Long? = null,
+    var color: String? = null
 )
 

@@ -20,9 +20,6 @@
         <item name="background_color_secondary">@color/back_secondary</item>
 
     </style>
-    <style name="Snack" parent="Widget.MaterialComponents.Snackbar">
-        <item name="colorSurface">@color/back_primary</item>
-    </style>
     <style name="BlueItems">
         <item name="colorPrimary">@color/color_blue</item>
         <item name="android:textColor">@color/color_blue</item>

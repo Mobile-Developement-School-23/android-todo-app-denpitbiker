@@ -12,20 +12,23 @@ import androidx.navigation.NavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.advancedsolutionsdevelopers.todoapp.R
+import com.advancedsolutionsdevelopers.todoapp.data.Constant.task_id_key
+import com.advancedsolutionsdevelopers.todoapp.data.Converters
 import com.advancedsolutionsdevelopers.todoapp.data.Priority
-import com.advancedsolutionsdevelopers.todoapp.data.TasksListViewModel
 import com.advancedsolutionsdevelopers.todoapp.data.TodoItem
+import com.advancedsolutionsdevelopers.todoapp.data.TodoItemsRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 
-class TaskAdapter(
-    private val navController: NavController,
-    private val viewModel: TasksListViewModel
-) : RecyclerView.Adapter<TaskViewHolder>() {
+class TaskAdapter(private val navController: NavController,private val fragmentScope: CoroutineScope) :
+    RecyclerView.Adapter<TaskViewHolder>() {
     var tasks = arrayListOf<TodoItem>()
-    var isCheckedChange: Boolean = false
     private var alertDialog: AlertDialog? = null
-    private val curDate: LocalDate = LocalDate.now()
+    private val converter = Converters()
+    private val curDate by lazy { converter.dateToTimestamp(LocalDate.now(converter.zoneId)) }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
@@ -51,32 +54,28 @@ class TaskAdapter(
 
     private fun setUpTextViews(holder: TaskViewHolder, task: TodoItem) {
         holder.taskTextTextview.text =
-            (if (task.priority == Priority.Low) "⬇️" else "") +
-                    (if (task.priority == Priority.High) "‼️" else "") + task.text
+            (if (task.priority == Priority.low) "⬇️" else "") +
+                    (if (task.priority == Priority.important) "‼️" else "") + task.text
         holder.deadlineDataTextview.text =
-            if (task.deadlineDate != null) task.deadlineDate.toString() else ""
+            if (task.deadlineDate != null) converter.fromTimeStampToDate(task.deadlineDate!!)
+                .toString() else ""
     }
 
     private fun setUpCheckbox(holder: TaskViewHolder, task: TodoItem) {
         holder.isCompleteCheckbox.isChecked = task.isCompleted
-        holder.isCompleteCheckbox.setOnClickListener { _ ->
-            val data: ArrayList<TodoItem> = viewModel.tasks.value!!
-            for (i in 0 until data.size) {
-                if (data[i].id == task.id) {
-                    data[i].isCompleted = !data[i].isCompleted
-                    holder.onBind(data[i], curDate)
-                    isCheckedChange = true
-                    break
-                }
+        holder.isCompleteCheckbox.setOnClickListener {
+            fragmentScope.launch(Dispatchers.IO) {
+                val data = TodoItemsRepository.getTaskById(task.id)
+                data.isCompleted = !data.isCompleted
+                TodoItemsRepository.updateTask(data)
             }
-            viewModel.tasks.value = data
         }
     }
 
     private fun setItemClickListeners(iv: View, task: TodoItem) {
         iv.setOnClickListener {
             val bundle = Bundle()
-            bundle.putString("taskId", task.id)
+            bundle.putString(task_id_key, task.id)
             navController.navigate(R.id.action_todoListFragment_to_taskFragment, bundle)
         }
         iv.setOnLongClickListener {
@@ -91,6 +90,7 @@ class TaskAdapter(
     override fun getItemViewType(position: Int): Int {
         return if (position == tasks.size) R.layout.rv_end_button else R.layout.rv_item
     }
+
     //Позже добавлю полезный функционал сюда
     private fun buildAlertDialog(view: View): AlertDialog {
         val items = arrayOf<CharSequence>(view.context.getString(R.string.toast_2_u))
