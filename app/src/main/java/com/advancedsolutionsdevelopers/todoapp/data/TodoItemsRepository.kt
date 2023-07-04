@@ -7,14 +7,13 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.provider.Settings
-import com.advancedsolutionsdevelopers.todoapp.data.Constant.device_id_key
-import com.advancedsolutionsdevelopers.todoapp.data.Constant.lkr_key
-import com.advancedsolutionsdevelopers.todoapp.data.Constant.sp_name
-import com.advancedsolutionsdevelopers.todoapp.network.models.ArrayResponse
-import com.advancedsolutionsdevelopers.todoapp.network.NetCallback
-import com.advancedsolutionsdevelopers.todoapp.network.Retrofit
-import com.advancedsolutionsdevelopers.todoapp.network.models.SingleItemResponse
-import com.advancedsolutionsdevelopers.todoapp.network.ToDoService
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.device_id_key
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.lkr_key
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.sp_name
+import com.advancedsolutionsdevelopers.todoapp.data.network.models.ArrayResponse
+import com.advancedsolutionsdevelopers.todoapp.data.network.Retrofit
+import com.advancedsolutionsdevelopers.todoapp.data.network.models.SingleItemResponse
+import com.advancedsolutionsdevelopers.todoapp.data.network.ToDoService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -25,9 +24,12 @@ import retrofit2.Response
 import retrofit2.create
 import java.time.LocalDate
 import java.util.concurrent.atomic.AtomicBoolean
-import com.advancedsolutionsdevelopers.todoapp.data.Constant.token_key
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.token_key
+import com.advancedsolutionsdevelopers.todoapp.data.database.AppDatabase
+import com.advancedsolutionsdevelopers.todoapp.utils.Converters
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 
 //TODO Result.failure<TodoItem>(IOException())
 
@@ -43,7 +45,7 @@ object TodoItemsRepository {
     private val _codeChannel = Channel<Int>()
     val codeChannel = _codeChannel.receiveAsFlow()
     private val scope = CoroutineScope(Dispatchers.IO)
-    private var checkConnectionJob:Job? =null
+    private var checkConnectionJob: Job? = null
 
     @SuppressLint("HardwareIds")
     fun init(context: Context) {
@@ -59,11 +61,11 @@ object TodoItemsRepository {
         connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         isOnlineMode = sp.contains(token_key)
-        checkConnectionJob=CoroutineScope(Dispatchers.IO).launch {
+        checkConnectionJob = CoroutineScope(Dispatchers.IO).launch {
             while (true) {
-                delay(1000)
+                delay(10000)
                 if (isOnline()) {
-                    if (sp.contains(token_key)&& !isOnline.get()) {
+                    if (sp.contains(token_key) && !isOnline.get()) {
                         syncWithServer()
                     }
                 }
@@ -123,21 +125,15 @@ object TodoItemsRepository {
         if (isOnlineMode && isOnline()) {
             try {
                 val response = service.getTasksList()
-                updateRevision(response.body()!!.revision!!)
-                val x = synchronizeData(response.body()!!.list)
-                for (i in x.second.first) {
-                    deleteTask(i, true)
-                }
-                for (i in x.second.second) {
-                    service.addTask(SingleItemResponse(i))
-                }
-                for (i in x.first.second) {
-                    database.toDoItemDao().insertItem(i)
-                }
-                for (i in x.first.first) {
-                    updateTask(i, true)
-                }
-                _codeChannel.send(200)
+                val serv_rev = response.body()!!.revision!!
+                updateRevision(serv_rev)
+                    val response_merged= service.updateTasksList(ArrayResponse(database.toDoItemDao().getAllNoFlow()))
+                    cleanTableAndInsert(response.body()!!.list)
+                    _codeChannel.send(response.code())
+                    when (response_merged.code()) {
+                        400, 404 -> syncWithServer()
+                        200 -> updateRevision(response_merged.body()!!.revision!!)
+                    }
             } catch (e: Exception) {
                 _codeChannel.send(600)
             }
@@ -155,21 +151,21 @@ object TodoItemsRepository {
         val added = mutableSetOf<String>()
         for (i in serverData) {
             try {
-                val item = database.toDoItemDao().getItemById(i.id)
+                val item = database.toDoItemDao().getItemByIdNoFlow(i.id)
                 if (i.lastEditDate > item.lastEditDate) {
                     resArr.add(i)
                     added.add(i.id)
-                } else if(i.lastEditDate< item.lastEditDate) {
-                    if(item.isDeleted){
+                } else if (i.lastEditDate < item.lastEditDate) {
+                    if (item.isDeleted) {
                         deleted.add(item)
-                    }else{
+                    } else {
                         resArr.add(item)
                     }
                     added.add(item.id)
-                }else if (item.isDeleted) {
+                } else if (item.isDeleted) {
                     deleted.add(item)
                     added.add(item.id)
-                }else{
+                } else {
                     added.add(item.id)
                 }
             } catch (e: Exception) {
@@ -185,13 +181,13 @@ object TodoItemsRepository {
         return Pair(Pair(resArr, newItemsServ), Pair(deleted, newItemsDB))
     }
 
-    suspend fun getTaskById(id: String): TodoItem {
+    suspend fun getTaskById(id: String): Flow<TodoItem?> {
         return database.toDoItemDao().getItemById(id)
     }
 
     suspend fun addTask(todoItem: TodoItem, mute: Boolean = false) {
         database.toDoItemDao().insertItem(todoItem)
-        if (isOnlineMode && isOnline.get()) {
+        if (isOnlineMode && isOnline()) {
             try {
                 val response = service.addTask(SingleItemResponse(todoItem))
                 handleResponse(response, mute)
@@ -204,9 +200,11 @@ object TodoItemsRepository {
 
     suspend fun updateTask(todoItem: TodoItem, mute: Boolean = false) {
         database.toDoItemDao().updateItem(todoItem)
-        if (isOnlineMode && isOnline.get()) {
+        if (isOnlineMode && isOnline()) {
             try {
                 val response = service.updateTask(todoItem.id, SingleItemResponse(todoItem))
+                val x = sp.getInt(lkr_key,0)
+                val c= x*2
                 handleResponse(response, mute)
             } catch (e: Exception) {
                 _codeChannel.send(600)
@@ -215,14 +213,14 @@ object TodoItemsRepository {
     }
 
     suspend fun deleteTask(todoItem: TodoItem, mute: Boolean = false) {
-        if (isOnlineMode && !isOnline.get()) {
+        if (isOnlineMode && isOnline()) {
             todoItem.isDeleted = true
             todoItem.lastEditDate = converter.dateToTimestamp(LocalDate.now())
             database.toDoItemDao().updateItem(todoItem)
         } else {
             database.toDoItemDao().deleteItem(todoItem)
         }
-        if (isOnlineMode && isOnline.get()) {
+        if (isOnlineMode && isOnline()) {
             try {
                 val response = service.deleteTask(todoItem.id)
                 handleResponse(response, mute)
@@ -233,7 +231,7 @@ object TodoItemsRepository {
     }
 
     suspend fun sendTasks(list: List<TodoItem>) {
-        if (isOnlineMode && isOnline.get()) {
+        if (isOnlineMode && isOnline()) {
             try {
                 val response = service.updateTasksList(ArrayResponse(list))
                 _codeChannel.send(response.code())

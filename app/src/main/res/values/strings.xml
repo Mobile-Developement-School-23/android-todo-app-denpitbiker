@@ -23,6 +23,7 @@
     <string name="synchronizing">This is not supposed to happen...Synchronizing...</string>
     <string name="wrong_auth">Wrong auth!(somehow)</string>
     <string name="saving">Saving...</string>
+    <string name="error">Error</string>
     <string-array name="priority">
         <item>Standard</item>
         <item>⬇️Low</item>

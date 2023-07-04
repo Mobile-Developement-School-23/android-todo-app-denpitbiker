@@ -20,4 +20,14 @@ data class TodoItem(
     @SerialName("deadline") var deadlineDate: Long? = null,
     var color: String? = null
 )
-
+fun blankTodoItem(): TodoItem {
+    return TodoItem(
+        "",
+        "",
+        Priority.low,
+        false,
+        0L,
+        0L,
+        ""
+    )
+}
