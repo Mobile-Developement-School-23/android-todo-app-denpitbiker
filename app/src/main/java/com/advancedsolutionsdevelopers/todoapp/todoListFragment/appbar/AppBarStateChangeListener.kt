@@ -1,11 +1,19 @@
 package com.advancedsolutionsdevelopers.todoapp.todoListFragment.appbar
 
+import androidx.cardview.widget.CardView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.advancedsolutionsdevelopers.todoapp.data.HandyFunctions.Companion.dpToFloat
+import com.advancedsolutionsdevelopers.todoapp.todoListFragment.recyclerView.SwipeCallback
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.AppBarLayout.OnOffsetChangedListener
 import kotlin.math.abs
 
 
-abstract class AppBarStateChangeListener : OnOffsetChangedListener {
+class AppBarStateChangeListener(
+    private val swipeCallback: SwipeCallback,
+    private val swipeRefreshLayout: SwipeRefreshLayout,
+    private val rvBackgroundCard: CardView
+) : OnOffsetChangedListener {
     enum class State {
         EXPANDED, COLLAPSED, IDLE
     }
@@ -33,5 +41,13 @@ abstract class AppBarStateChangeListener : OnOffsetChangedListener {
         }
     }
 
-    abstract fun onStateChanged(appBarLayout: AppBarLayout, state: State)
+    private fun onStateChanged(appBarLayout: AppBarLayout, state: State) {
+        swipeCallback.isAppbarExpanded = state == State.EXPANDED
+        swipeRefreshLayout.isEnabled = state == State.EXPANDED
+        if (state == State.COLLAPSED) {
+            rvBackgroundCard.radius = 0f
+        } else {
+            rvBackgroundCard.radius = 10f.dpToFloat()
+        }
+    }
 }

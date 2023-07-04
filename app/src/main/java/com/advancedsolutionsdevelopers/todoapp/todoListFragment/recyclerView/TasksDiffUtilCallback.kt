@@ -19,7 +19,8 @@ class TasksDiffUtilCallback(
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
         return (oldList[oldItemPosition].text == newList[newItemPosition].text &&
                 oldList[oldItemPosition].isCompleted == newList[newItemPosition].isCompleted &&
-                oldList[oldItemPosition].deadlineDate == newList[newItemPosition].deadlineDate)
+                oldList[oldItemPosition].deadlineDate == newList[newItemPosition].deadlineDate &&
+                oldList[oldItemPosition].priority == newList[newItemPosition].priority)
 
     }
 }

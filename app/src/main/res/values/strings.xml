@@ -17,6 +17,12 @@
     <string name="toast_2_u">Toast 2 U!(Click)</string>
     <string name="goofy_ahh_string">🫠🥴🤪🫡🫣</string>
     <string name="continue_text">Continue</string>
+    <string name="failed_to_connect">Failed to connect(retry later)</string>
+    <string name="success">Success</string>
+    <string name="server_error_try_later">Server error. Try later.</string>
+    <string name="synchronizing">This is not supposed to happen...Synchronizing...</string>
+    <string name="wrong_auth">Wrong auth!(somehow)</string>
+    <string name="saving">Saving...</string>
     <string-array name="priority">
         <item>Standard</item>
         <item>⬇️Low</item>

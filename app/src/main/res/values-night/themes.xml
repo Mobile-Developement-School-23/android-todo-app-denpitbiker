@@ -1,0 +1,22 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.ToDoApp" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/back_primary</item>
+        <item name="android:statusBarColor">@color/back_primary</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="backgroundColor">@color/back_primary</item>
+        <item name="android:windowBackground">@color/back_primary</item>
+        <item name="android:textColor">@color/label_primary</item>
+        <item name="android:textColorSecondary">@color/label_secondary</item>
+        <item name="android:textColorTertiary">@color/label_tertiary</item>
+        <item name="android:textColorHint">@color/label_tertiary</item>
+        <item name="dividerColor">@color/support_separator</item>
+        <item name="colorControlActivated">@color/color_blue</item>
+        <item name="android:datePickerDialogTheme">@style/DatePicker</item>
+        <item name="color_delete_active">@color/color_red</item>
+        <item name="color_delete_inactive">@color/label_tertiary</item>
+        <item name="support_separator_color">@color/support_separator</item>
+        <item name="base_green">@color/color_green</item>
+        <item name="label_primary">@color/label_primary</item>
+        <item name="background_color_secondary">@color/back_secondary</item>
+    </style>
+</resources>

@@ -8,34 +8,43 @@ import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.advancedsolutionsdevelopers.todoapp.R
 import com.advancedsolutionsdevelopers.todoapp.data.HandyFunctions
-import com.advancedsolutionsdevelopers.todoapp.data.TasksListViewModel
+import com.advancedsolutionsdevelopers.todoapp.data.TodoItemsRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 class SwipeCallback(
     dragDirs: Int,
     swipeDirs: Int,
     private val tasksAdapter: TaskAdapter,
-    private val viewModel: TasksListViewModel,
-    private val context: Context
+    private val context: Context, private val swipeRef: SwipeRefreshLayout,private val fragmentScope: CoroutineScope
 ) : ItemTouchHelper.SimpleCallback(
     dragDirs,
     swipeDirs
 ) {
+    var isAppbarExpanded = false
     override fun onMove(
         recyclerView: RecyclerView,
         viewHolder: RecyclerView.ViewHolder,
         target: RecyclerView.ViewHolder
-    ): Boolean = false
+    ): Boolean {
+        return false
+    }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         if (direction == ItemTouchHelper.RIGHT) {
             (viewHolder as TaskViewHolder).isCompleteCheckbox.isChecked = true
             viewHolder.isCompleteCheckbox.callOnClick()
-            tasksAdapter.notifyItemChanged(viewHolder.adapterPosition)
         } else {
-            viewModel.deleteItem(tasksAdapter.tasks[viewHolder.adapterPosition])
+            if (viewHolder.adapterPosition < tasksAdapter.tasks.size) {
+                fragmentScope.launch(Dispatchers.IO) {
+                    TodoItemsRepository.deleteTask(tasksAdapter.tasks[viewHolder.adapterPosition])
+                }
+            }
         }
     }
 
@@ -50,6 +59,11 @@ class SwipeCallback(
     ) {
         if (viewHolder.adapterPosition == tasksAdapter.tasks.size) {
             return//Когда пытаемся свайпнуть "Add new task"
+        }
+        if (viewHolder.itemView.x != 0f) {
+            swipeRef.isEnabled = false
+        } else {
+            swipeRef.isEnabled = isAppbarExpanded
         }
         val isDeleteSwipe = viewHolder.itemView.x < 0//Режим отрисовки бэкграунда при свайпе
         val icon = AppCompatResources.getDrawable(

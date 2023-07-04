@@ -1,10 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.ToDoApp" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/back_primary</item>
-        <item name="android:statusBarColor">@color/transparent</item>
+        <item name="android:statusBarColor">@color/back_primary</item>
+        <item name="android:windowLightStatusBar">true</item>
         <item name="backgroundColor">@color/back_primary</item>
         <item name="android:windowBackground">@color/back_primary</item>
-        <item name="android:windowLightStatusBar">true</item>
         <item name="android:textColor">@color/label_primary</item>
         <item name="android:textColorSecondary">@color/label_secondary</item>
         <item name="android:textColorTertiary">@color/label_tertiary</item>
@@ -18,6 +18,7 @@
         <item name="base_green">@color/color_green</item>
         <item name="label_primary">@color/label_primary</item>
         <item name="background_color_secondary">@color/back_secondary</item>
+
     </style>
     <style name="BlueItems">
         <item name="colorPrimary">@color/color_blue</item>
