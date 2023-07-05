@@ -95,7 +95,7 @@ class TodoListFragment : Fragment() {
                             R.id.action_todoListFragment_to_taskFragment,
                             it.bundle
                         )
-                        viewModel.navigationState.emit(NavigationState())
+                        viewModel.onNavigated()
                     }
                 }
             }
@@ -144,7 +144,9 @@ class TodoListFragment : Fragment() {
     }
 
     private fun changeItemsVisibility() {
-        binding.changeVisibilityButton.setImageResource(if (isCheckedTasksVisible) R.drawable.visible else R.drawable.invisible)
+        binding.changeVisibilityButton.setImageResource(
+            if (isCheckedTasksVisible) R.drawable.visible else R.drawable.invisible
+        )
         observeTasks()
     }
 

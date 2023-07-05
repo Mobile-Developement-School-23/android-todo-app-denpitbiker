@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-class TaskViewModel() :
+class TaskViewModel :
     ViewModel() {
     /*private val getItemUseCase = GetItemUseCase(dao)
     private val deleteItemUseCase = DeleteItemUseCase(repository)

@@ -9,7 +9,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-//колбек, который должен был реагировать на изменение сети, но пока ведет себя неадекватно
 class NetCallback : ConnectivityManager.NetworkCallback() {
     override fun onAvailable(network: Network) {
         super.onAvailable(network)
@@ -28,7 +27,8 @@ class NetCallback : ConnectivityManager.NetworkCallback() {
 
     private fun isOnline(): Boolean {
         val capabilities =
-            TodoItemsRepository.connectivityManager.getNetworkCapabilities(TodoItemsRepository.connectivityManager.activeNetwork)
+            TodoItemsRepository.connectivityManager
+                .getNetworkCapabilities(TodoItemsRepository.connectivityManager.activeNetwork)
         if (capabilities != null) {
             return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
                     capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||

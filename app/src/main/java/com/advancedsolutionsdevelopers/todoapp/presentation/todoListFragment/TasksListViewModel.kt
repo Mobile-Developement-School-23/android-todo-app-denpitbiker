@@ -23,14 +23,15 @@ import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.rec
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.LocalDateTime
 
-class TasksListViewModel() : ViewModel() {
+class TasksListViewModel : ViewModel() {
     private var syncWithServerJob: Job? = null
-    val navigationState = MutableStateFlow(NavigationState())
+    private val _navigationState = MutableStateFlow(NavigationState())
+    val navigationState = _navigationState.asStateFlow()
     private val converter: Converters = Converters()
     /*private val deleteItemUseCase = DeleteItemUseCase(repository)
     private val saveItemUseCase = SaveItemUseCase(repository)
@@ -102,14 +103,17 @@ class TasksListViewModel() : ViewModel() {
                 updNavigation(item)
             })
     }
-
+    //TODO maybe add emit function
     private fun updNavigation(item: TodoItem) {
         viewModelScope.launch {
             with(item) {
                 val x = Bundle()
                 x.putString(task_id_key, id)
-                navigationState.emit(NavigationState(bundle = x, mode = NavigationMode.Item))
+                _navigationState.emit(NavigationState(bundle = x, mode = NavigationMode.Item))
             }
         }
+    }
+    suspend fun onNavigated(){
+        _navigationState.emit(NavigationState())
     }
 }
