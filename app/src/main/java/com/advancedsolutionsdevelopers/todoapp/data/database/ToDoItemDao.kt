@@ -19,7 +19,7 @@ interface ToDoItemDao {
     fun getItemById(id: String): Flow<TodoItem?>
 
     @Query("SELECT * FROM TodoItem WHERE id=:id")
-    fun getItemByIdNoFlow(id: String): TodoItem
+    fun getItemByIdNoFlow(id: String): TodoItem?
 
     @Query("SELECT * FROM TodoItem WHERE isCompleted=0 AND isDeleted=0 ORDER BY lastEditDate DESC")
     fun getAllUncompleted(): Flow<List<TodoItem>>

@@ -167,7 +167,7 @@ class TodoListFragment : Fragment() {
             changeInternetMode()
         }
         binding.floatingActionButton.setOnClickListener {
-            navController.navigate(R.id.action_todoListFragment_to_taskFragment)
+            navController.navigate(R.id.action_todoListFragment_to_taskFragment, Bundle())
         }
         binding.appbarLayout.addOnOffsetChangedListener(
             AppBarStateChangeListener(

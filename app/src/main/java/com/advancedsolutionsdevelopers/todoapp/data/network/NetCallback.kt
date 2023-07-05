@@ -6,15 +6,16 @@ import android.net.NetworkCapabilities
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant.token_key
 import com.advancedsolutionsdevelopers.todoapp.data.TodoItemsRepository
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 //колбек, который должен был реагировать на изменение сети, но пока ведет себя неадекватно
-class NetCallback(private val scope: CoroutineScope) : ConnectivityManager.NetworkCallback() {
+class NetCallback : ConnectivityManager.NetworkCallback() {
     override fun onAvailable(network: Network) {
         super.onAvailable(network)
         TodoItemsRepository.isOnline.set(isOnline())
         if (TodoItemsRepository.sp.contains(token_key)) {
-            scope.launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 TodoItemsRepository.syncWithServer()
             }
         }

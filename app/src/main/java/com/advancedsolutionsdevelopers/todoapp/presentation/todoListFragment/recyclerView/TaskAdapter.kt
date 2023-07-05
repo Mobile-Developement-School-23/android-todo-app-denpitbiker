@@ -4,19 +4,18 @@ package com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.re
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.navigation.NavController
 import androidx.recyclerview.widget.ListAdapter
 import com.advancedsolutionsdevelopers.todoapp.R
 import com.advancedsolutionsdevelopers.todoapp.data.Priority
 import com.advancedsolutionsdevelopers.todoapp.data.TodoItem
 import com.advancedsolutionsdevelopers.todoapp.utils.Converters
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 
 class TaskAdapter :
     ListAdapter<ToDoItemUIState, TaskViewHolder>(TasksDiffUtilCallback()) {
     private val converter = Converters()
-    private val curDate by lazy { converter.dateToTimestamp(LocalDate.now(converter.zoneId)) }
+    private val curDate by lazy { converter.dateToTimestamp(LocalDateTime.now(converter.zoneId)) }
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
@@ -25,14 +24,15 @@ class TaskAdapter :
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
+        val item = currentList[position]
+        val task = item.todoItem
         holder.itemView.setOnClickListener {
-            currentList[position].onClick()
+            item.onClick()
         }
         if (currentList[position].todoItem.id.isEmpty()) {
             return
         }
-        val task = currentList[position].todoItem
-        setUpCheckbox(holder, currentList[position])
+        setUpCheckbox(holder, item)
         setUpTextViews(holder, task)
         holder.onBind(task, curDate)
     }

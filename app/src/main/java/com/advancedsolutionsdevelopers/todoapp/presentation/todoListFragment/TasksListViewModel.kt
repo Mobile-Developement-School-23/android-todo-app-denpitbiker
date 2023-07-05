@@ -7,9 +7,15 @@ import com.advancedsolutionsdevelopers.todoapp.utils.Constant.task_id_key
 import com.advancedsolutionsdevelopers.todoapp.data.TodoItem
 import com.advancedsolutionsdevelopers.todoapp.data.TodoItemsRepository
 import com.advancedsolutionsdevelopers.todoapp.data.blankTodoItem
+import com.advancedsolutionsdevelopers.todoapp.data.database.ToDoItemDao
+import com.advancedsolutionsdevelopers.todoapp.domain.DeleteItemUseCase
 import com.advancedsolutionsdevelopers.todoapp.utils.Converters
 import com.advancedsolutionsdevelopers.todoapp.domain.GetAllItemsUseCase
+import com.advancedsolutionsdevelopers.todoapp.domain.GetItemUseCase
+import com.advancedsolutionsdevelopers.todoapp.domain.GetNumberOfCompletedUseCase
+import com.advancedsolutionsdevelopers.todoapp.domain.GetServerCodesUseCase
 import com.advancedsolutionsdevelopers.todoapp.domain.GetUncheckedItemsUseCase
+import com.advancedsolutionsdevelopers.todoapp.domain.SaveItemUseCase
 import com.advancedsolutionsdevelopers.todoapp.utils.cancelIfInUse
 import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView.NavigationMode
 import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView.NavigationState
@@ -20,20 +26,27 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 
-class TasksListViewModel : ViewModel() {
+class TasksListViewModel() : ViewModel() {
     private var syncWithServerJob: Job? = null
     val navigationState = MutableStateFlow(NavigationState())
     private val converter: Converters = Converters()
+    /*private val deleteItemUseCase = DeleteItemUseCase(repository)
+    private val saveItemUseCase = SaveItemUseCase(repository)
+    private val getAllItemsUseCase = GetAllItemsUseCase(dao)
+    private val getUncheckedItemsUseCase = GetUncheckedItemsUseCase(dao)
+    private val getNumOfCompletedUseCase = GetNumberOfCompletedUseCase(dao)
+    private val getServerCodesUseCase = GetServerCodesUseCase(repository)*/
     var allTasks = flow {
-        GetAllItemsUseCase().invoke().collect {
+        TodoItemsRepository.database.toDoItemDao().getAll().collect {
             emit(
                 it.map { item -> wrapToDoItem(item) } + wrapToDoItem(blankTodoItem())
             )
         }
     }
     val uncompletedTasks = flow {
-        GetUncheckedItemsUseCase().invoke().collect {
+        TodoItemsRepository.database.toDoItemDao().getAllUncompleted().collect {
             emit(
                 it.map { item -> wrapToDoItem(item) } + wrapToDoItem(blankTodoItem())
             )
@@ -80,7 +93,7 @@ class TasksListViewModel : ViewModel() {
             updateItem(
                 item.copy(
                     isCompleted = !item.isCompleted, lastEditDate = converter.dateToTimestamp(
-                        LocalDate.now()
+                        LocalDateTime.now()
                     )
                 )
             )

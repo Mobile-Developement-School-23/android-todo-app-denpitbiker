@@ -26,6 +26,7 @@ import com.advancedsolutionsdevelopers.todoapp.utils.Converters
 import com.advancedsolutionsdevelopers.todoapp.utils.getThemeAttrColor
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 
@@ -35,12 +36,12 @@ class TaskFragment : Fragment() {
     private var menu: PriorityMenu? = null
     private var isEditMode = false
     private var firstLaunch: Boolean = true
-    private var deadlineDate = LocalDate.of(2000, 1, 1)
+    private var deadlineDate = LocalDateTime.of(2000, 1, 1,1,1)
     private var datePickerDialog: DatePickerDialog? = null
     private var task: TodoItem? = null
     private val viewModel: TaskViewModel by activityViewModels()
     private val converter: Converters = Converters()
-    private val curDate = converter.dateToTimestamp(LocalDate.now())
+    private val curDate = converter.dateToTimestamp(LocalDateTime.now())
     private lateinit var sp: SharedPreferences
     private var _binding: FragmentTaskBinding? = null
     private val binding: FragmentTaskBinding
@@ -76,11 +77,11 @@ class TaskFragment : Fragment() {
                 isEditMode = it != null
                 if (isEditMode) {
                     task = it
+                    firstLaunch=false
                 }else if(!firstLaunch){
                     Toast.makeText(requireContext(), R.string.deleted, Toast.LENGTH_SHORT).show()
                     binding.closeButton.callOnClick()
                 }
-                firstLaunch=false
                 fillViewsOnMode()
                 setupDeleteButton()
             }
@@ -102,9 +103,10 @@ class TaskFragment : Fragment() {
     }
 
     private fun generateCalendarDialog(): DatePickerDialog {
+        val now = LocalDateTime.now()
         val datePickerListener = OnDateSetListener { _, selectedYear, selectedMonth, selectedDay ->
             binding.calendarButton.text = "$selectedYear-${selectedMonth + 1}-$selectedDay"
-            deadlineDate = LocalDate.of(selectedYear, selectedMonth + 1, selectedDay)
+            deadlineDate = LocalDateTime.of(selectedYear, selectedMonth + 1, selectedDay,now.hour,now.minute,now.second)
             isCalendarWasOpen = true
         }
         val cur = LocalDate.now(converter.zoneId)

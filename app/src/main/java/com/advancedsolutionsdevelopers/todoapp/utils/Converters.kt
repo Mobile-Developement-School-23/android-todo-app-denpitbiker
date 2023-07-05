@@ -8,8 +8,8 @@ import java.time.ZoneOffset
 class Converters {
     val zoneId: ZoneId by lazy { ZoneId.of(ZoneOffset.systemDefault().id) }
 
-    fun dateToTimestamp(date: LocalDate): Long {
-        return date.atStartOfDay(zoneId).toEpochSecond()
+    fun dateToTimestamp(date: LocalDateTime): Long {
+        return date.toEpochSecond(zoneId.rules.getOffset(LocalDateTime.now()))
     }
 
     fun fromTimestamp(value: Long): LocalDateTime {
