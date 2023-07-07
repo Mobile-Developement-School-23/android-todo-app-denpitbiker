@@ -1,6 +1,7 @@
 package com.advancedsolutionsdevelopers.todoapp.presentation.taskFragment
 
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.DatePickerDialog.OnDateSetListener
 import android.content.Context
@@ -13,21 +14,24 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.advancedsolutionsdevelopers.todoapp.R
-import com.advancedsolutionsdevelopers.todoapp.data.Priority
-import com.advancedsolutionsdevelopers.todoapp.data.TodoItem
+import com.advancedsolutionsdevelopers.todoapp.data.models.Priority
+import com.advancedsolutionsdevelopers.todoapp.data.models.TodoItem
 import com.advancedsolutionsdevelopers.todoapp.databinding.FragmentTaskBinding
+import com.advancedsolutionsdevelopers.todoapp.presentation.MainActivity
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant
-import com.advancedsolutionsdevelopers.todoapp.utils.Constant.device_id_key
-import com.advancedsolutionsdevelopers.todoapp.utils.Constant.task_id_key
-import com.advancedsolutionsdevelopers.todoapp.utils.Converters
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.DEVICE_ID_KEY
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.TASK_ID_KEY
+import com.advancedsolutionsdevelopers.todoapp.utils.DeadlineIdentifier
+import com.advancedsolutionsdevelopers.todoapp.utils.TimeFormatConverters
 import com.advancedsolutionsdevelopers.todoapp.utils.getThemeAttrColor
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
+import javax.inject.Inject
 
 
 class TaskFragment : Fragment() {
@@ -36,12 +40,18 @@ class TaskFragment : Fragment() {
     private var menu: PriorityMenu? = null
     private var isEditMode = false
     private var firstLaunch: Boolean = true
-    private var deadlineDate = LocalDateTime.of(2000, 1, 1,1,1)
+    private var deadlineDate = LocalDateTime.of(2000, 1, 1, 1, 1)
     private var datePickerDialog: DatePickerDialog? = null
     private var task: TodoItem? = null
-    private val viewModel: TaskViewModel by activityViewModels()
-    private val converter: Converters = Converters()
+
+    @Inject
+    lateinit var modelFactory: TaskViewModelFactory
+    private val model: TaskViewModel by lazy {
+        ViewModelProvider(this, modelFactory)[TaskViewModel::class.java]
+    }
+    private val converter: TimeFormatConverters = TimeFormatConverters()
     private val curDate = converter.dateToTimestamp(LocalDateTime.now())
+    private val deadlineIdentifier = DeadlineIdentifier()
     private lateinit var sp: SharedPreferences
     private var _binding: FragmentTaskBinding? = null
     private val binding: FragmentTaskBinding
@@ -49,12 +59,13 @@ class TaskFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        sp = requireContext().getSharedPreferences(Constant.sp_name, Context.MODE_PRIVATE)
+        sp = requireContext().getSharedPreferences(Constant.SP_NAME, Context.MODE_PRIVATE)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
+        (activity as MainActivity).activityComponent.inject(this)
         _binding = FragmentTaskBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -71,14 +82,14 @@ class TaskFragment : Fragment() {
     }
 
     private fun createFillViewsJob() {
-        taskId = requireArguments().getString(task_id_key, "-1")
+        taskId = requireArguments().getString(TASK_ID_KEY, "-1")
         lifecycleScope.launch {
-            viewModel.getItem(taskId).collect {
+            model.getItem(taskId).collect {
                 isEditMode = it != null
                 if (isEditMode) {
                     task = it
-                    firstLaunch=false
-                }else if(!firstLaunch){
+                    firstLaunch = false
+                } else if (!firstLaunch) {
                     Toast.makeText(requireContext(), R.string.deleted, Toast.LENGTH_SHORT).show()
                     binding.closeButton.callOnClick()
                 }
@@ -102,11 +113,14 @@ class TaskFragment : Fragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun generateCalendarDialog(): DatePickerDialog {
         val now = LocalDateTime.now()
         val datePickerListener = OnDateSetListener { _, selectedYear, selectedMonth, selectedDay ->
             binding.calendarButton.text = "$selectedYear-${selectedMonth + 1}-$selectedDay"
-            deadlineDate = LocalDateTime.of(selectedYear, selectedMonth + 1, selectedDay,now.hour,now.minute,now.second)
+            deadlineDate = LocalDateTime.of(
+                selectedYear, selectedMonth + 1, selectedDay, now.hour, now.minute, now.second
+            )
             isCalendarWasOpen = true
         }
         val cur = LocalDate.now(converter.zoneId)
@@ -148,42 +162,58 @@ class TaskFragment : Fragment() {
     }
 
     private fun buildAndPostNewTask() {
-        val x = if (!isEditMode) {
-            TodoItem(
-                UUID.randomUUID().toString(),
-                binding.taskDescriptionEdittext.text.toString(),
-                Priority.values()[menu!!.currentPriority],
-                false,
-                curDate,
-                curDate,
-                sp.getString(device_id_key, "_")!!,
-                false,
-                if (binding.doUntilSwitch.isChecked)
-                    (if (isCalendarWasOpen) converter.dateToTimestamp(deadlineDate) else curDate) else null
-            )
+        val x = if (isEditMode) {
+            generateEditedItem()
         } else {
-            TodoItem(
-                task!!.id,
-                binding.taskDescriptionEdittext.text.toString(),
-                if(menu!!.wasUsed) Priority.values()[menu!!.currentPriority] else task!!.priority,
-                task!!.isCompleted,
-                task!!.creationDate,
-                curDate,
-                sp.getString(device_id_key, "_")!!,
-                false,
-                if (binding.doUntilSwitch.isChecked) (if (isCalendarWasOpen) converter.dateToTimestamp(
-                    deadlineDate
-                ) else (if (task!!.deadlineDate != null) task!!.deadlineDate else curDate)) else null
-            )
+            generateNewItem()
         }
-        viewModel.saveItem(x, isEditMode)
+        model.saveItem(x, isEditMode)
+    }
+
+    private fun generateEditedItem(): TodoItem {
+        return TodoItem(
+            task!!.id,
+            binding.taskDescriptionEdittext.text.toString(),
+            if (menu!!.wasUsed) Priority.values()[menu!!.currentPriority] else task!!.priority,
+            task!!.isCompleted,
+            task!!.creationDate,
+            curDate,
+            sp.getString(DEVICE_ID_KEY, "_")!!,
+            false,
+            deadlineIdentifier.identify(
+                false,
+                isCalendarWasOpen,
+                binding.doUntilSwitch.isChecked,
+                deadlineDate,
+                task
+            )
+        )
+    }
+
+    private fun generateNewItem(): TodoItem {
+        return TodoItem(
+            UUID.randomUUID().toString(),
+            binding.taskDescriptionEdittext.text.toString(),
+            Priority.values()[menu!!.currentPriority],
+            false,
+            curDate,
+            curDate,
+            sp.getString(DEVICE_ID_KEY, "_")!!,
+            false,
+            deadlineIdentifier.identify(
+                true,
+                isCalendarWasOpen,
+                binding.doUntilSwitch.isChecked,
+                deadlineDate
+            )
+        )
     }
 
     private fun setupDeleteButton() {
         binding.deleteButton.isClickable = isEditMode
         if (isEditMode) {
             binding.deleteButton.setOnClickListener {
-                viewModel.deleteItem(task!!)
+                model.deleteItem(task!!)
             }
         }
         val color = getThemeAttrColor(

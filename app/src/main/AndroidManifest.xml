@@ -17,6 +17,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ToDoApp"
         tools:targetApi="34">
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            android:enabled="false"/>
         <activity
             android:name=".presentation.MainActivity"
             android:exported="true">

@@ -18,10 +18,12 @@ class SwipeCallback(
     swipeDirs: Int,
     private val tasksAdapter: TaskAdapter,
     private val context: Context,
-    private val swipeRef: SwipeRefreshLayout) : ItemTouchHelper.SimpleCallback(
+    private val swipeRef: SwipeRefreshLayout
+) : ItemTouchHelper.SimpleCallback(
     dragDirs,
     swipeDirs
 ) {
+    private val textMargin = context.resources.getDimension(R.dimen.text_margin).roundToInt()
     var isAppbarExpanded = false
     override fun onMove(
         recyclerView: RecyclerView,
@@ -33,10 +35,10 @@ class SwipeCallback(
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         if (direction == ItemTouchHelper.RIGHT) {
-            (viewHolder as TaskViewHolder).isCompleteCheckbox.isChecked = true
-            viewHolder.isCompleteCheckbox.callOnClick()
+            (viewHolder as TaskViewHolder).isCompleteChBox.isChecked = true
+            viewHolder.isCompleteChBox.callOnClick()
         } else {
-            if (viewHolder.adapterPosition < tasksAdapter.currentList.size-1) {
+            if (viewHolder.adapterPosition < tasksAdapter.currentList.size - 1) {
                 tasksAdapter.currentList[viewHolder.adapterPosition].onDelete()
             }
         }
@@ -51,7 +53,7 @@ class SwipeCallback(
         actionState: Int,
         isCurrentlyActive: Boolean
     ) {
-        if (viewHolder.adapterPosition == tasksAdapter.currentList.size-1) {
+        if (viewHolder.adapterPosition == tasksAdapter.currentList.size - 1) {
             return//Когда пытаемся свайпнуть "Add new task"
         }
         if (viewHolder.itemView.x != 0f) {
@@ -60,7 +62,6 @@ class SwipeCallback(
             swipeRef.isEnabled = isAppbarExpanded
         }
         val isDeleteSwipe = viewHolder.itemView.x < 0//Режим отрисовки бэкграунда при свайпе
-
         val icon = AppCompatResources.getDrawable(
             context,
             if (isDeleteSwipe) R.drawable.delete else R.drawable.check
@@ -76,34 +77,54 @@ class SwipeCallback(
 
     private fun drawOnCanvas(c: Canvas, isDelSwipe: Boolean, v: View, icon: Drawable, dX: Float) {
         val verticalMargin = (v.bottom - v.top - icon.intrinsicHeight) / 2
-        val textMargin = context.resources.getDimension(R.dimen.text_margin).roundToInt()
         val color = getThemeAttrColor(
-            context,
-            if (isDelSwipe) R.attr.color_delete_active else R.attr.base_green
+            context, if (isDelSwipe) R.attr.color_delete_active else R.attr.base_green
         )
         if (isDelSwipe) {
-            c.clipRect(
-                v.right.toFloat(),
-                v.top.toFloat(),
-                v.right.toFloat() + dX,
-                v.bottom.toFloat()
-            )
-            c.drawColor(color)
-            icon.bounds = Rect(
-                v.right - icon.intrinsicWidth - textMargin,
-                v.top + verticalMargin,
-                v.right - textMargin,
-                v.bottom - verticalMargin
-            )
+            drawDelSwipe(c, v, dX, icon, verticalMargin, color)
         } else {
-            c.clipRect(0f, v.top.toFloat(), dX, v.bottom.toFloat())
-            c.drawColor(color)
-            icon.bounds = Rect(
-                textMargin,
-                v.top + verticalMargin,
-                textMargin + icon.intrinsicWidth,
-                v.bottom - verticalMargin
-            )
+            drawCheckSwipe(c, v, dX, icon, verticalMargin, color)
         }
+    }
+
+    private fun drawDelSwipe(
+        c: Canvas,
+        v: View,
+        dX: Float,
+        icon: Drawable,
+        verticalMargin: Int,
+        color: Int
+    ) {
+        c.clipRect(
+            v.right.toFloat(),
+            v.top.toFloat(),
+            v.right.toFloat() + dX,
+            v.bottom.toFloat()
+        )
+        c.drawColor(color)
+        icon.bounds = Rect(
+            v.right - icon.intrinsicWidth - textMargin,
+            v.top + verticalMargin,
+            v.right - textMargin,
+            v.bottom - verticalMargin
+        )
+    }
+
+    private fun drawCheckSwipe(
+        c: Canvas,
+        v: View,
+        dX: Float,
+        icon: Drawable,
+        verticalMargin: Int,
+        color: Int
+    ) {
+        c.clipRect(0f, v.top.toFloat(), dX, v.bottom.toFloat())
+        c.drawColor(color)
+        icon.bounds = Rect(
+            textMargin,
+            v.top + verticalMargin,
+            textMargin + icon.intrinsicWidth,
+            v.bottom - verticalMargin
+        )
     }
 }

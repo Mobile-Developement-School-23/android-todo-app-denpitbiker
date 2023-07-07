@@ -1,21 +1,14 @@
 package com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView
 
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import com.advancedsolutionsdevelopers.todoapp.R
-import com.advancedsolutionsdevelopers.todoapp.data.Priority
-import com.advancedsolutionsdevelopers.todoapp.data.TodoItem
-import com.advancedsolutionsdevelopers.todoapp.utils.Converters
-import java.time.LocalDateTime
 
 
 class TaskAdapter :
     ListAdapter<ToDoItemUIState, TaskViewHolder>(TasksDiffUtilCallback()) {
-    private val converter = Converters()
-    private val curDate by lazy { converter.dateToTimestamp(LocalDateTime.now(converter.zoneId)) }
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
@@ -25,33 +18,13 @@ class TaskAdapter :
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         val item = currentList[position]
-        val task = item.todoItem
         holder.itemView.setOnClickListener {
             item.onClick()
         }
         if (currentList[position].todoItem.id.isEmpty()) {
             return
         }
-        setUpCheckbox(holder, item)
-        setUpTextViews(holder, task)
-        holder.onBind(task, curDate)
-    }
-
-    @SuppressLint("SetTextI18n")
-    private fun setUpTextViews(holder: TaskViewHolder, task: TodoItem) {
-        holder.taskTextTextview.text =
-            (if (task.priority == Priority.low) "⬇️" else "") +
-                    (if (task.priority == Priority.important) "‼️" else "") + task.text
-        holder.deadlineDataTextview.text =
-            if (task.deadlineDate != null) converter.fromTimeStampToDate(task.deadlineDate!!)
-                .toString() else ""
-    }
-
-    private fun setUpCheckbox(holder: TaskViewHolder, task: ToDoItemUIState) {
-        holder.isCompleteCheckbox.isChecked = task.todoItem.isCompleted
-        holder.isCompleteCheckbox.setOnClickListener {
-            task.onCheck()
-        }
+        holder.onBind(item)
     }
 
     override fun getItemViewType(position: Int): Int {

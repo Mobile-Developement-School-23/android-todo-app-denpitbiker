@@ -6,9 +6,9 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import com.advancedsolutionsdevelopers.todoapp.data.TodoItem
+import com.advancedsolutionsdevelopers.todoapp.data.models.TodoItem
 import kotlinx.coroutines.flow.Flow
-
+//Интерфейс методов к таблице ToDoItem
 @Dao
 interface ToDoItemDao {
 
@@ -28,7 +28,7 @@ interface ToDoItemDao {
     fun getNumOfCompleted(): Flow<Int>
 
     @Query("SELECT * FROM TodoItem WHERE isDeleted=0")
-    suspend fun getAllNoFlow(): List<TodoItem>
+    fun getAllNoFlow(): List<TodoItem>
 
     @Insert
     suspend fun insertAll(items: List<TodoItem>)

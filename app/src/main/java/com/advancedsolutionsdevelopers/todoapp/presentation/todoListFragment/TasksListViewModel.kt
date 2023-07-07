@@ -3,19 +3,18 @@ package com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment
 import android.os.Bundle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.advancedsolutionsdevelopers.todoapp.utils.Constant.task_id_key
-import com.advancedsolutionsdevelopers.todoapp.data.TodoItem
-import com.advancedsolutionsdevelopers.todoapp.data.TodoItemsRepository
-import com.advancedsolutionsdevelopers.todoapp.data.blankTodoItem
-import com.advancedsolutionsdevelopers.todoapp.data.database.ToDoItemDao
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.TASK_ID_KEY
+import com.advancedsolutionsdevelopers.todoapp.data.models.TodoItem
+import com.advancedsolutionsdevelopers.todoapp.data.models.blankTodoItem
+import com.advancedsolutionsdevelopers.todoapp.domain.ChangeConnectionModeUseCase
 import com.advancedsolutionsdevelopers.todoapp.domain.DeleteItemUseCase
-import com.advancedsolutionsdevelopers.todoapp.utils.Converters
 import com.advancedsolutionsdevelopers.todoapp.domain.GetAllItemsUseCase
-import com.advancedsolutionsdevelopers.todoapp.domain.GetItemUseCase
 import com.advancedsolutionsdevelopers.todoapp.domain.GetNumberOfCompletedUseCase
 import com.advancedsolutionsdevelopers.todoapp.domain.GetServerCodesUseCase
 import com.advancedsolutionsdevelopers.todoapp.domain.GetUncheckedItemsUseCase
 import com.advancedsolutionsdevelopers.todoapp.domain.SaveItemUseCase
+import com.advancedsolutionsdevelopers.todoapp.domain.SyncWithServerUseCase
+import com.advancedsolutionsdevelopers.todoapp.utils.TimeFormatConverters
 import com.advancedsolutionsdevelopers.todoapp.utils.cancelIfInUse
 import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView.NavigationMode
 import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView.NavigationState
@@ -28,38 +27,41 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
-class TasksListViewModel : ViewModel() {
+class TasksListViewModel(
+    private val deleteItemUseCase: DeleteItemUseCase,
+    private val saveItemUseCase: SaveItemUseCase,
+    private val getAllItemsUseCase: GetAllItemsUseCase,
+    private val getUncheckedItemsUseCase: GetUncheckedItemsUseCase,
+    private val getNumOfCompletedUseCase: GetNumberOfCompletedUseCase,
+    private val getServerCodesUseCase: GetServerCodesUseCase,
+    private val syncWithServerUseCase: SyncWithServerUseCase,
+    private val changeConnectionModeUseCase: ChangeConnectionModeUseCase
+) : ViewModel() {
     private var syncWithServerJob: Job? = null
     private val _navigationState = MutableStateFlow(NavigationState())
     val navigationState = _navigationState.asStateFlow()
-    private val converter: Converters = Converters()
-    /*private val deleteItemUseCase = DeleteItemUseCase(repository)
-    private val saveItemUseCase = SaveItemUseCase(repository)
-    private val getAllItemsUseCase = GetAllItemsUseCase(dao)
-    private val getUncheckedItemsUseCase = GetUncheckedItemsUseCase(dao)
-    private val getNumOfCompletedUseCase = GetNumberOfCompletedUseCase(dao)
-    private val getServerCodesUseCase = GetServerCodesUseCase(repository)*/
+    private val converter: TimeFormatConverters = TimeFormatConverters()
     var allTasks = flow {
-        TodoItemsRepository.database.toDoItemDao().getAll().collect {
+        getAllItemsUseCase().collect {
             emit(
                 it.map { item -> wrapToDoItem(item) } + wrapToDoItem(blankTodoItem())
             )
         }
     }
     val uncompletedTasks = flow {
-        TodoItemsRepository.database.toDoItemDao().getAllUncompleted().collect {
+        getUncheckedItemsUseCase().collect {
             emit(
                 it.map { item -> wrapToDoItem(item) } + wrapToDoItem(blankTodoItem())
             )
         }
     }
     val completedTasksCount = flow {
-        TodoItemsRepository.database.toDoItemDao().getNumOfCompleted().collect {
+        getNumOfCompletedUseCase().collect {
             emit(it)
         }
     }
     val serverCodes = flow {
-        TodoItemsRepository.codeChannel.collect {
+        getServerCodesUseCase().collect {
             emit(it)
         }
     }
@@ -67,23 +69,21 @@ class TasksListViewModel : ViewModel() {
     fun syncWithServer() {
         syncWithServerJob?.cancelIfInUse()
         syncWithServerJob = viewModelScope.launch(Dispatchers.IO) {
-            TodoItemsRepository.syncWithServer()
+            syncWithServerUseCase()
         }
     }
 
-    fun changeConnectionMode() {
-        TodoItemsRepository.changeConnectionMode(true)
-    }
+    fun changeConnectionMode(dropTable: Boolean) = changeConnectionModeUseCase(dropTable)
 
     private fun deleteItem(item: TodoItem) {
         viewModelScope.launch(Dispatchers.IO) {
-            TodoItemsRepository.deleteTask(item)
+            deleteItemUseCase(item)
         }
     }
 
     private fun updateItem(item: TodoItem) {
         viewModelScope.launch(Dispatchers.IO) {
-            TodoItemsRepository.updateTask(item)
+            saveItemUseCase(item, true)
         }
     }
 
@@ -103,17 +103,18 @@ class TasksListViewModel : ViewModel() {
                 updNavigation(item)
             })
     }
-    //TODO maybe add emit function
+
     private fun updNavigation(item: TodoItem) {
         viewModelScope.launch {
             with(item) {
                 val x = Bundle()
-                x.putString(task_id_key, id)
+                x.putString(TASK_ID_KEY, id)
                 _navigationState.emit(NavigationState(bundle = x, mode = NavigationMode.Item))
             }
         }
     }
-    suspend fun onNavigated(){
+
+    suspend fun onNavigated() {
         _navigationState.emit(NavigationState())
     }
 }

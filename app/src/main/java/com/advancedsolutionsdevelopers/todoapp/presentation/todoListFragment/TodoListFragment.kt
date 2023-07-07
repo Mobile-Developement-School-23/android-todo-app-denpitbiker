@@ -1,5 +1,6 @@
 package com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -8,33 +9,41 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.advancedsolutionsdevelopers.todoapp.R
-import com.advancedsolutionsdevelopers.todoapp.utils.Constant.sp_name
-import com.advancedsolutionsdevelopers.todoapp.utils.Constant.token_key
-import com.advancedsolutionsdevelopers.todoapp.utils.cancelIfInUse
-import com.advancedsolutionsdevelopers.todoapp.utils.makeSnackbar
 import com.advancedsolutionsdevelopers.todoapp.data.network.PassportAuthContract
 import com.advancedsolutionsdevelopers.todoapp.databinding.FragmentTodoListBinding
+import com.advancedsolutionsdevelopers.todoapp.presentation.MainActivity
 import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView.NavigationMode
-import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView.NavigationState
 import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView.SwipeCallback
 import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView.TaskAdapter
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.TOKEN_KEY
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.SP_NAME
+import com.advancedsolutionsdevelopers.todoapp.utils.cancelIfInUse
+import com.advancedsolutionsdevelopers.todoapp.utils.makeSnackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class TodoListFragment : Fragment() {
+    @Inject
+    lateinit var callback: RegisterResultCallback
+
+    @Inject
+    lateinit var modelFactory: TasksListViewModelFactory
     private lateinit var navController: NavController
     private var tasksAdapter: TaskAdapter? = null
     private var swipeCallback: SwipeCallback? = null
     private lateinit var sharedPrefs: SharedPreferences
-    private val viewModel: TasksListViewModel by activityViewModels()
+    private val viewModel: TasksListViewModel by lazy {
+        ViewModelProvider(this, modelFactory)[TasksListViewModel::class.java]
+    }
     private var startForResult: ActivityResultLauncher<Any?>? = null
     private var isCheckedTasksVisible: Boolean = true
     private var isAuthorized = false
@@ -47,10 +56,10 @@ class TodoListFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        sharedPrefs = requireContext().getSharedPreferences(sp_name, Context.MODE_PRIVATE)
+        (activity as MainActivity).activityComponent.inject(this)
+        sharedPrefs = requireContext().getSharedPreferences(SP_NAME, Context.MODE_PRIVATE)
         startForResult = registerForActivityResult(
-            PassportAuthContract(),
-            RegisterResultCallback(requireContext(), lifecycleScope)
+            PassportAuthContract(), callback
         )
     }
 
@@ -63,7 +72,7 @@ class TodoListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        isAuthorized = sharedPrefs.contains(token_key)
+        isAuthorized = sharedPrefs.contains(TOKEN_KEY)
         binding.internetButton.setImageResource(if (isAuthorized) R.drawable.offline else R.drawable.online)
     }
 
@@ -73,8 +82,11 @@ class TodoListFragment : Fragment() {
         tasksAdapter = TaskAdapter()
         binding.internetButton.setImageResource(if (isAuthorized) R.drawable.offline else R.drawable.online)
         swipeCallback = SwipeCallback(
-            0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT,
-            tasksAdapter!!, requireContext(), binding.swipeRefreshLayout
+            0,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT,
+            tasksAdapter!!,
+            requireContext(),
+            binding.swipeRefreshLayout
         )
         setupListeners()
         ItemTouchHelper(swipeCallback!!).attachToRecyclerView(binding.rv)
@@ -92,8 +104,7 @@ class TodoListFragment : Fragment() {
                 viewModel.navigationState.collect {
                     if (it.mode != NavigationMode.None) {
                         navController.navigate(
-                            R.id.action_todoListFragment_to_taskFragment,
-                            it.bundle
+                            R.id.action_todoListFragment_to_taskFragment, it.bundle
                         )
                         viewModel.onNavigated()
                     }
@@ -102,6 +113,7 @@ class TodoListFragment : Fragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun observeCompletedCount() {
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -153,11 +165,9 @@ class TodoListFragment : Fragment() {
     private fun changeInternetMode() {
         if (isAuthorized) {
             isAuthorized = false
-            viewModel.changeConnectionMode()
+            viewModel.changeConnectionMode(dropTable = !isAuthorized)
             binding.internetButton.setImageResource(R.drawable.online)
-        } else {
-            startForResult!!.launch(null)
-        }
+        } else startForResult!!.launch(null)
     }
 
     private fun setupListeners() {
@@ -173,18 +183,12 @@ class TodoListFragment : Fragment() {
         }
         binding.appbarLayout.addOnOffsetChangedListener(
             AppBarStateChangeListener(
-                swipeCallback!!,
-                binding.swipeRefreshLayout,
-                binding.rvBackgroundCardview
+                swipeCallback!!, binding.swipeRefreshLayout, binding.rvBackgroundCardview
             )
         )
         binding.swipeRefreshLayout.setOnRefreshListener {
-            if (!isAuthorized) {
-                startForResult!!.launch(null)
-            }
-            if (isAuthorized) {
-                viewModel.syncWithServer()
-            }
+            if (!isAuthorized) startForResult!!.launch(null)
+            if (isAuthorized) viewModel.syncWithServer()
         }
     }
 

@@ -1,11 +1,11 @@
 package com.advancedsolutionsdevelopers.todoapp.domain
 
-import com.advancedsolutionsdevelopers.todoapp.data.TodoItem
+import com.advancedsolutionsdevelopers.todoapp.data.models.TodoItem
 import com.advancedsolutionsdevelopers.todoapp.data.TodoItemsRepository
-import com.advancedsolutionsdevelopers.todoapp.data.database.ToDoItemDao
-import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class DeleteItemUseCase(private val repository: TodoItemsRepository) {
+
+class DeleteItemUseCase @Inject constructor(private val repository: TodoItemsRepository) {
     suspend operator fun invoke(todoItem: TodoItem) {
         repository.deleteTask(todoItem)
     }

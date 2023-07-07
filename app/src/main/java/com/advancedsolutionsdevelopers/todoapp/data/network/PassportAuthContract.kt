@@ -8,6 +8,7 @@ import com.yandex.authsdk.YandexAuthOptions
 import com.yandex.authsdk.YandexAuthSdk
 import com.yandex.authsdk.YandexAuthToken
 import java.lang.Exception
+
 //контракт авторизации через яндекс пасспорт
 class PassportAuthContract : ActivityResultContract<Any?, YandexAuthToken?>() {
     lateinit var sdk: YandexAuthSdk

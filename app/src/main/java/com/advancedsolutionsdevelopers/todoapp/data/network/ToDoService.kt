@@ -11,6 +11,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 
+//интерфейс работы с сервером
 interface ToDoService {
 
     @GET("list")

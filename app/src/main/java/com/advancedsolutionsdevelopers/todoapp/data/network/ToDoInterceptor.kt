@@ -1,23 +1,23 @@
 package com.advancedsolutionsdevelopers.todoapp.data.network
 
-import android.content.Context
-import com.advancedsolutionsdevelopers.todoapp.utils.Constant.auth_header
-import com.advancedsolutionsdevelopers.todoapp.utils.Constant.last_known_header
-import com.advancedsolutionsdevelopers.todoapp.utils.Constant.lkr_key
-import com.advancedsolutionsdevelopers.todoapp.utils.Constant.sp_name
-import com.advancedsolutionsdevelopers.todoapp.utils.Constant.token_key
+import android.content.SharedPreferences
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.AUTH_HEADER
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.LAST_KNOWN_HEADER
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.LKR_KEY
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.TOKEN_KEY
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
-//Интерсептор запроса в сеть
-class ToDoInterceptor(private val context: Context) : Interceptor {
+import javax.inject.Inject
+
+//Интерсептор, вставляющий заголовки
+class ToDoInterceptor @Inject constructor(private val sp: SharedPreferences) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request: Request = chain.request()
-        val sp = context.getSharedPreferences(sp_name, Context.MODE_PRIVATE)
-        val lastRev = sp.getInt(lkr_key, 0)
+        val lastRev = sp.getInt(LKR_KEY, 0)
         val newReq = request.newBuilder()
-            .header(auth_header, "OAuth " + sp.getString(token_key, ""))
-            .header(last_known_header, lastRev.toString()).build()
+            .header(AUTH_HEADER, "OAuth " + sp.getString(TOKEN_KEY, ""))
+            .header(LAST_KNOWN_HEADER, lastRev.toString()).build()
         return chain.proceed(newReq)
     }
 }

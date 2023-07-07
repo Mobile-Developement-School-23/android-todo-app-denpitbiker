@@ -7,6 +7,8 @@ import android.view.View
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import com.advancedsolutionsdevelopers.todoapp.R
+import com.advancedsolutionsdevelopers.todoapp.ToDoApp
+import com.advancedsolutionsdevelopers.todoapp.di.component.ApplicationComponent
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 
@@ -53,3 +55,9 @@ private fun serverCodeToString(code: Int): Int {
         else -> R.string.error
     }
 }
+
+val Context.applicationComponent: ApplicationComponent
+    get() = when (this) {
+        is ToDoApp -> applicationComponent
+        else -> (applicationContext as ToDoApp).applicationComponent
+    }

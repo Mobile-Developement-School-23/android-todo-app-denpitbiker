@@ -1,7 +1,6 @@
 package com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView
 
 import androidx.recyclerview.widget.DiffUtil
-import com.advancedsolutionsdevelopers.todoapp.data.TodoItem
 
 //Используется для оптимального обновления recyclerview
 class TasksDiffUtilCallback : DiffUtil.ItemCallback<ToDoItemUIState>() {
@@ -15,8 +14,7 @@ class TasksDiffUtilCallback : DiffUtil.ItemCallback<ToDoItemUIState>() {
         return (oldItem.todoItem.text == newItem.todoItem.text &&
                 oldItem.todoItem.isCompleted == newItem.todoItem.isCompleted &&
                 oldItem.todoItem.deadlineDate == newItem.todoItem.deadlineDate &&
-                oldItem.todoItem.priority == newItem.todoItem.priority &&
-                oldItem.todoItem.id != "" && newItem.todoItem.id != ""
+                oldItem.todoItem.priority == newItem.todoItem.priority
                 )
     }
 }
