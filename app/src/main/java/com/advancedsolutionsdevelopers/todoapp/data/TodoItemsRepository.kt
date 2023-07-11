@@ -74,20 +74,30 @@ class TodoItemsRepository @Inject constructor(
 
     private suspend fun syncAttempt() {
         val response = service.getTasksList()
-        updateRevision(response.body()!!.revision!!)
-        val x = merger.merge(response.body()!!.list, table.getAllNoFlow())
-        for (i in x.deletedOnDevice) {
-            deleteTask(i, true)
+        val revision = response.body()!!.revision!!
+        if (revision > sp.getInt(LKR_KEY, 0)) {
+            updateRevision(revision)
+            dropTableAndInsertList(response.body()!!.list)
+        } else {
+            val x = merger.merge(response.body()!!.list, table.getAllNoFlow())
+            for (i in x.deletedOnDevice) {
+                deleteTask(i, true)
+            }
+            for (i in x.newItemsFromDB) {
+                service.addTask(SingleItemResponse(i))
+            }
+            for (i in x.newItemsFromServ) {
+                table.insertItem(i)
+            }
+            for (i in x.needUpdate) {
+                updateTask(i, true)
+            }
         }
-        for (i in x.newItemsFromDB) {
-            service.addTask(SingleItemResponse(i))
-        }
-        for (i in x.newItemsFromServ) {
-            table.insertItem(i)
-        }
-        for (i in x.needUpdate) {
-            updateTask(i, true)
-        }
+    }
+
+    private suspend fun dropTableAndInsertList(list: List<TodoItem>) {
+        table.deleteTable()
+        table.insertAll(list)
     }
 
     fun getTaskById(id: String): Flow<TodoItem?> {
