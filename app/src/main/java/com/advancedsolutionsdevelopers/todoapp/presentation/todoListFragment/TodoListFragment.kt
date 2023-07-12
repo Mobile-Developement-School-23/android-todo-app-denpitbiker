@@ -73,14 +73,12 @@ class TodoListFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         isAuthorized = sharedPrefs.contains(TOKEN_KEY)
-        binding.internetButton.setImageResource(if (isAuthorized) R.drawable.offline else R.drawable.online)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navController = view.findNavController()
         tasksAdapter = TaskAdapter()
-        binding.internetButton.setImageResource(if (isAuthorized) R.drawable.offline else R.drawable.online)
         swipeCallback = SwipeCallback(
             0,
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT,
@@ -166,7 +164,6 @@ class TodoListFragment : Fragment() {
         if (isAuthorized) {
             isAuthorized = false
             viewModel.changeConnectionMode(dropTable = !isAuthorized)
-            binding.internetButton.setImageResource(R.drawable.online)
         } else startForResult!!.launch(null)
     }
 
@@ -175,8 +172,9 @@ class TodoListFragment : Fragment() {
             isCheckedTasksVisible = !isCheckedTasksVisible
             changeItemsVisibility()
         }
-        binding.internetButton.setOnClickListener {
-            changeInternetMode()
+        binding.settingsButton.setOnClickListener {
+            //changeInternetMode()
+            navController.navigate(R.id.action_todoListFragment_to_settingsFragment)
         }
         binding.floatingActionButton.setOnClickListener {
             navController.navigate(R.id.action_todoListFragment_to_taskFragment, Bundle())

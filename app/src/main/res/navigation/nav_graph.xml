@@ -14,10 +14,20 @@
             app:destination="@id/taskFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
             app:popExitAnim="@anim/nav_default_exit_anim" />
+        <action
+            android:id="@+id/action_todoListFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:popExitAnim="@anim/nav_default_exit_anim" />
     </fragment>
     <fragment
         android:id="@+id/taskFragment"
         android:name="com.advancedsolutionsdevelopers.todoapp.presentation.taskFragment.TaskFragment"
         android:label="fragment_task"
         tools:layout="@layout/fragment_task" />
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.advancedsolutionsdevelopers.todoapp.presentation.settingsFragment.SettingsFragment"
+        android:label="fragment_settings"
+        tools:layout="@layout/fragment_settings" />
 </navigation>

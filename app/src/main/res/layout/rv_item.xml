@@ -22,7 +22,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
+            android:textAppearance="@style/BodyMedium"
             android:ellipsize="end"
             android:id="@+id/task_text_textview"
             android:maxLines="3"/>
@@ -30,6 +30,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/deadline_date_textview"
-            android:textColor="?attr/android:textColorTertiary"/>
+            style="@style/Subtitle"/>
     </LinearLayout>
 </LinearLayout>

@@ -1,40 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:viewBindingIgnore="true"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="20dp"
-    android:clickable="true"
     android:background="?attr/selectableItemBackground"
-    android:orientation="horizontal">
+    android:clickable="true"
+    android:orientation="horizontal"
+    android:paddingTop="20dp"
+    tools:viewBindingIgnore="true">
+
     <CheckBox
+        android:id="@+id/is_complete_checkbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:clickable="false"
-        android:id="@+id/is_complete_checkbox"
         android:visibility="invisible" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:clickable="false"
+        android:orientation="vertical"
         android:paddingHorizontal="10dp">
+
+        <TextView
+            android:id="@+id/task_text_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:text="@string/add_new_task"
+            android:textAppearance="@style/BodyMedium"
+            android:textColor="?attr/android:textColorTertiary" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:clickable="false"
-            android:id="@+id/task_text_textview"
-            android:text="@string/add_new_task"
-            android:textColor="?attr/android:textColorTertiary"
-            android:textSize="16sp" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/deadline_date_textview"
-            />
+            android:textAppearance="@style/Subtitle" />
     </LinearLayout>
 </LinearLayout>
