@@ -26,18 +26,18 @@ class TaskViewModel(
     private val sp:SharedPreferences
 ) :
     ViewModel() {
-    var isNew = false
+    var isNew = mutableStateOf(false)
     var etText = mutableStateOf("")
     var priority = Priority.basic
     var task = blankTodoItem()
     var isCalendarWasOpen = false
     var switchChecked = mutableStateOf(false)
     var mDate = mutableStateOf("")
-    var deadlineDate: LocalDateTime = LocalDateTime.of(2000, 1, 1, 1, 1)
+    var deadlineDate: Long = 0L
     private val converter: TimeFormatConverters = TimeFormatConverters()
     fun getItem(id: String): Flow<TodoItem?> = getItemUseCase(id)
     fun deleteItem() {
-        if(!isNew){
+        if(!isNew.value){
             CoroutineScope(Dispatchers.IO).launch {
                 deleteItemUseCase(task)
             }
@@ -52,16 +52,16 @@ class TaskViewModel(
     private fun generateItem(): TodoItem {
         val curDate = converter.dateToTimestamp(LocalDateTime.now())
         return TodoItem(
-            if (isNew) UUID.randomUUID().toString() else task.id,
+            if (isNew.value) UUID.randomUUID().toString() else task.id,
             etText.value,
             priority,
-            if (isNew) false else task.isCompleted,
-            if (isNew) curDate else task.creationDate,
+            if (isNew.value) false else task.isCompleted,
+            if (isNew.value) curDate else task.creationDate,
             curDate,
             sp.getString(DEVICE_ID_KEY,"")!!,
             false,
             DeadlineIdentifier().identify(
-                isNew,
+                isNew.value,
                 isCalendarWasOpen,
                 switchChecked.value,
                 deadlineDate,

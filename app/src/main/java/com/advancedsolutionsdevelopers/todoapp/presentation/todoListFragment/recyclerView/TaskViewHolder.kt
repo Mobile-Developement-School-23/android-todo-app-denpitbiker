@@ -13,6 +13,7 @@ import com.advancedsolutionsdevelopers.todoapp.data.models.Priority
 import com.advancedsolutionsdevelopers.todoapp.data.models.TodoItem
 import com.advancedsolutionsdevelopers.todoapp.utils.TimeFormatConverters
 import com.advancedsolutionsdevelopers.todoapp.utils.getThemeAttrColor
+import com.advancedsolutionsdevelopers.todoapp.utils.str
 import java.time.LocalDateTime
 
 
@@ -71,8 +72,9 @@ class TaskViewHolder(itemView: View) :
             (if (task.priority == Priority.low) "⬇️" else "") +
                     (if (task.priority == Priority.important) "‼️" else "") + task.text
         deadlineDataTV.text =
-            if (task.deadlineDate != null) converter.fromTimeStampToDate(task.deadlineDate!!)
-                .toString() else ""
+            if (task.deadlineDate != null)
+                converter.fromTimestamp(task.deadlineDate!!).str()
+            else ""
     }
 
     private fun setUpCheckbox(task: ToDoItemUIState) {

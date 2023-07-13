@@ -144,7 +144,8 @@ class SettingsFragment : Fragment() {
                                 ) {
                                     Text(
                                         text = stringResource(R.string.drop_notify_prefs),
-                                        color = redColor
+                                        color = redColor,
+                                        style = ToDoTypography.bodyMedium
                                     )
                                 }
                             }
@@ -163,7 +164,10 @@ class SettingsFragment : Fragment() {
                                         .align(Alignment.CenterHorizontally)
                                         .fillMaxWidth()
                                 ) {
-                                    Text(text = stringResource(R.string.log_out), color = redColor)
+                                    Text(
+                                        text = stringResource(R.string.log_out), color = redColor,
+                                        style = ToDoTypography.bodyMedium
+                                    )
                                 }
 
                             }
@@ -208,7 +212,10 @@ class SettingsFragment : Fragment() {
                             shape = RectangleShape,
                             colors = buttonColors
                         ) {
-                            Text(text = modes[i])
+                            Text(
+                                text = modes[i],
+                                style = ToDoTypography.bodyMedium
+                            )
 
                         }
                     }

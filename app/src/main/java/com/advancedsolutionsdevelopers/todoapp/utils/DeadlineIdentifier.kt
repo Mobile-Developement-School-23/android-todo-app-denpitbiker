@@ -11,7 +11,7 @@ class DeadlineIdentifier {
         isNewItem: Boolean,
         isCalWasOpen: Boolean,
         isChecked: Boolean,
-        deadlineDate: LocalDateTime,
+        deadlineDate: Long,
         task: TodoItem? = null
     ): Long? = if (isNewItem) decideDateNew(
         isChecked,
@@ -25,22 +25,23 @@ class DeadlineIdentifier {
         isChecked: Boolean,
         isCalWasOpen: Boolean,
         curDate: Long,
-        deadlineDate: LocalDateTime
+        deadlineDate: Long
     ): Long? =
         if (isChecked) {
-            if (isCalWasOpen) converter.dateToTimestamp(deadlineDate)
+            if (isCalWasOpen) deadlineDate
             else curDate
         } else null
 
     private fun decideDateEdit(
         isChecked: Boolean,
         isCalWasOpen: Boolean,
-        deadlineDate: LocalDateTime,
+        deadlineDate: Long,
         task: TodoItem
     ): Long? =
         if (isChecked) {
-            if (isCalWasOpen) converter.dateToTimestamp(deadlineDate)
-            else {
+            if (isCalWasOpen) {
+                deadlineDate
+            } else {
                 deadlineOrCurrentDate(task)
             }
 

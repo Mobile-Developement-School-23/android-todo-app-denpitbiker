@@ -4,7 +4,6 @@ package com.advancedsolutionsdevelopers.todoapp.presentation.taskFragment
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.DatePickerDialog.OnDateSetListener
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -45,7 +44,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringArrayResource
@@ -59,16 +57,19 @@ import com.advancedsolutionsdevelopers.todoapp.R
 import com.advancedsolutionsdevelopers.todoapp.data.models.Priority
 import com.advancedsolutionsdevelopers.todoapp.presentation.MainActivity
 import com.advancedsolutionsdevelopers.todoapp.presentation.theme.AppTheme
+import com.advancedsolutionsdevelopers.todoapp.presentation.theme.ToDoTypography
 import com.advancedsolutionsdevelopers.todoapp.presentation.theme.redColor
 import com.advancedsolutionsdevelopers.todoapp.presentation.theme.switchBackColor
-import com.advancedsolutionsdevelopers.todoapp.utils.Constant
-import com.advancedsolutionsdevelopers.todoapp.utils.Constant.DEVICE_ID_KEY
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant.TASK_ID_KEY
 import com.advancedsolutionsdevelopers.todoapp.utils.TimeFormatConverters
-import com.advancedsolutionsdevelopers.todoapp.utils.getThemeAttrColor
+import com.advancedsolutionsdevelopers.todoapp.utils.createDateString
+import com.advancedsolutionsdevelopers.todoapp.utils.dateStringToTimestamp
+import com.advancedsolutionsdevelopers.todoapp.utils.pickDateAndTime
+import com.advancedsolutionsdevelopers.todoapp.utils.str
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.Calendar
 import javax.inject.Inject
 
 
@@ -84,18 +85,12 @@ class TaskFragment : Fragment() {
     }
     private val converter: TimeFormatConverters = TimeFormatConverters()
     private val curDate = converter.dateToTimestamp(LocalDateTime.now())
-    private lateinit var deviceId: String
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        deviceId = requireContext().getSharedPreferences(Constant.SP_NAME, Context.MODE_PRIVATE)
-            .getString(DEVICE_ID_KEY, "")!!
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         (activity as MainActivity).activityComponent.inject(this)
+        createFillViewsJob()
         return ComposeView(requireContext()).apply {
             setContent {
                 AppTheme {
@@ -104,12 +99,13 @@ class TaskFragment : Fragment() {
             }
         }
     }
+
     private fun createFillViewsJob() {
         taskId = requireArguments().getString(TASK_ID_KEY, "-1")
         lifecycleScope.launch {
             model.getItem(taskId).collect {
                 isEditMode = it != null
-                model.isNew = !isEditMode
+                model.isNew.value = !isEditMode
                 if (isEditMode) {
                     model.task = it!!
                     firstLaunch = false
@@ -129,32 +125,20 @@ class TaskFragment : Fragment() {
                 priority = task.priority
                 switchChecked.value = task.deadlineDate != null
                 mDate.value =
-                    converter.fromTimeStampToDate(if (model.task.deadlineDate != null) model.task.deadlineDate!! else curDate)
-                        .toString()
+                    converter.fromTimestamp(if (model.task.deadlineDate != null) model.task.deadlineDate!! else curDate)
+                        .str()
             } else {
-                mDate.value = converter.fromTimeStampToDate(curDate).toString()
+                mDate.value = converter.fromTimestamp(curDate).str()
             }
         }
     }
 
     @SuppressLint("SetTextI18n")
-    private fun generateCalendarDialog(): DatePickerDialog {
-        val now = LocalDateTime.now()
-        val datePickerListener = OnDateSetListener { _, selectedYear, selectedMonth, selectedDay ->
-            model.mDate.value = "$selectedYear-${selectedMonth + 1}-$selectedDay"
-            model.deadlineDate = LocalDateTime.of(
-                selectedYear, selectedMonth + 1, selectedDay, now.hour, now.minute, now.second
-            )
-            model.isCalendarWasOpen = true
-        }
-        val cur = LocalDate.now(converter.zoneId)
-        return DatePickerDialog(
-            requireContext(), datePickerListener, cur.year, cur.monthValue - 1, cur.dayOfMonth
-        )
-    }
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        createFillViewsJob()
+    private fun generateCalendarDialog(cal: Calendar) {
+        val timestamp = createDateString(cal)
+        model.mDate.value = timestamp
+        model.deadlineDate = dateStringToTimestamp(timestamp)
+        model.isCalendarWasOpen = true
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -166,34 +150,34 @@ class TaskFragment : Fragment() {
         val switchChecked by remember { model.switchChecked }
         val etText by remember { model.etText }
         val mDate by remember { model.mDate }
-        val delColor = if (isEditMode) redColor else switchBackColor
-        Scaffold(
-            topBar = {
-                Surface(shadowElevation = elevation) {
-                    TopAppBar(title = {}, navigationIcon = {
-                        IconButton(onClick = { requireActivity().supportFragmentManager.popBackStack() }) {
-                            Icon(Icons.Default.Close, null)
-                        }
-                    }, actions = {
-                        TextButton(onClick = {
-                            if (model.etText.value == "") {
-                                Toast.makeText(
-                                    requireContext(),
-                                    R.string.enter_something_first,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                return@TextButton
-                            }
-                            model.saveItem(isEditMode)
-                            requireActivity().supportFragmentManager.popBackStack()
-                        }) {
-                            Text(stringResource(R.string.save))
-                        }
+        val isNew by remember { model.isNew }
+        val delColor = if (isNew) switchBackColor else redColor
+        Scaffold(topBar = {
+            Surface(shadowElevation = elevation) {
+                TopAppBar(title = {}, navigationIcon = {
+                    IconButton(onClick = { requireActivity().supportFragmentManager.popBackStack() }) {
+                        Icon(Icons.Default.Close, null)
                     }
-                    )
-                }
+                }, actions = {
+                    TextButton(onClick = {
+                        if (model.etText.value == "") {
+                            Toast.makeText(
+                                requireContext(),
+                                R.string.enter_something_first,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@TextButton
+                        }
+                        model.saveItem(isEditMode)
+                        requireActivity().supportFragmentManager.popBackStack()
+                    }) {
+                        Text(
+                            stringResource(R.string.save), style = ToDoTypography.bodyMedium
+                        )
+                    }
+                })
             }
-        ) { innerPadding ->
+        }) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
                 Column(
                     modifier = Modifier
@@ -201,24 +185,37 @@ class TaskFragment : Fragment() {
                         .padding(horizontal = 10.dp)
                 ) {
                     Card {
-                        TextField(
-                            value = etText,
-                            onValueChange = {
-                                model.etText.value = it
-                            },
-                            placeholder = { Text(stringResource(R.string.i_need_to_do)) },
-                            modifier = Modifier.fillMaxWidth()
+                        TextField(value = etText, onValueChange = {
+                            model.etText.value = it
+                        }, placeholder = {
+                            Text(
+                                stringResource(R.string.i_need_to_do),
+                                style = ToDoTypography.bodyMedium
+                            )
+                        }, modifier = Modifier.fillMaxWidth()
                         )
                     }
-                    Text(text = stringResource(R.string.priority))
+                    Text(
+                        modifier = Modifier.padding(top = 10.dp),
+                        text = stringResource(R.string.priority),
+                        style = ToDoTypography.bodyMedium
+                    )
                     DropDownMenu()
                     Divider()
                     Row {
                         Column {
-                            Text(text = stringResource(R.string.do_until))
+                            Text(
+                                modifier = Modifier.padding(top = 10.dp),
+                                text = stringResource(R.string.do_until),
+                                style = ToDoTypography.bodyMedium
+                            )
                             if (switchChecked) {
                                 TextButton(
-                                    onClick = { generateCalendarDialog().show() },
+                                    onClick = {
+                                        requireContext().pickDateAndTime {
+                                            generateCalendarDialog(it)
+                                        }
+                                    },
                                     contentPadding = PaddingValues(
                                         start = 0.dp,
                                         top = 0.dp,
@@ -227,17 +224,17 @@ class TaskFragment : Fragment() {
                                     ),
                                     shape = RectangleShape
                                 ) {
-                                    Text(mDate)
+                                    Text(
+                                        mDate, style = ToDoTypography.bodyMedium
+                                    )
                                 }
                             }
                         }
                         Spacer(modifier = Modifier.weight(1f))
                         Switch(
-                            checked = switchChecked,
-                            onCheckedChange = {
+                            checked = switchChecked, onCheckedChange = {
                                 model.switchChecked.value = it
-                            },
-                            colors = SwitchDefaults.colors(uncheckedTrackColor = switchBackColor)
+                            }, colors = SwitchDefaults.colors(uncheckedTrackColor = switchBackColor)
                         )
                     }
                     Divider()
@@ -254,7 +251,8 @@ class TaskFragment : Fragment() {
                         )
                         Text(
                             text = stringResource(R.string.delete),
-                            color = delColor
+                            color = delColor,
+                            style = ToDoTypography.bodyMedium
                         )
                     }
                 }
@@ -267,7 +265,6 @@ class TaskFragment : Fragment() {
     fun DropDownMenu() {
         val priorities = stringArrayResource(R.array.priority)
         var expanded by remember { mutableStateOf(false) }
-        var menuText by remember { mutableStateOf(priorities[model.priority.ordinal]) }
         Box {
             TextButton(
                 onClick = { expanded = true },
@@ -280,22 +277,21 @@ class TaskFragment : Fragment() {
                 ),
                 shape = RectangleShape
             ) {
-                Text(menuText)
+                Text(
+                    priorities[model.priority.ordinal], style = ToDoTypography.bodyMedium
+                )
                 Spacer(modifier = Modifier.weight(1f))
             }
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 for (i in 0..2) {
-                    DropdownMenuItem(
-                        text = { Text(priorities[i]) },
-                        onClick = {
-                            expanded = false
-                            menuText = priorities[i]
-                            model.priority = Priority.values()[i]
-                        }
-                    )
+                    DropdownMenuItem(text = {
+                        Text(
+                            priorities[i], style = ToDoTypography.bodyMedium
+                        )
+                    }, onClick = {
+                        expanded = false
+                        model.priority = Priority.values()[i]
+                    })
                 }
             }
         }
