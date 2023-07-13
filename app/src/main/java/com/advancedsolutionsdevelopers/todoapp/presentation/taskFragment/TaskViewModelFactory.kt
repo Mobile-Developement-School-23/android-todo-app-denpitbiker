@@ -13,9 +13,10 @@ import javax.inject.Inject
 class TaskViewModelFactory @Inject constructor(
     private val getItemUseCase: GetItemUseCase,
     private val deleteItemUseCase: DeleteItemUseCase,
-    private val saveItemUseCase: SaveItemUseCase
+    private val saveItemUseCase: SaveItemUseCase,
+    private val sp:SharedPreferences
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T = TaskViewModel(
-        getItemUseCase, deleteItemUseCase, saveItemUseCase
+        getItemUseCase, deleteItemUseCase, saveItemUseCase, sp
     ) as T
 }

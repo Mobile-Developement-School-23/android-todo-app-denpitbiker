@@ -8,6 +8,7 @@ object Constant {
     const val DEVICE_ID_KEY = "deviceId"
     const val TASK_ID_KEY = "taskId"
     const val THEME_CODE_KEY = "themeCode"
+    const val SHOW_NOTIFICATIONS_KEY = "allowNotification"
     const val WORKER_NAME = "sync"
     const val AUTH_HEADER = "Authorization"
     const val LAST_KNOWN_HEADER = "X-Last-Known-Revision"

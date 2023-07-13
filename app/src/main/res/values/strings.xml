@@ -39,6 +39,14 @@
         <item>It\'s made with ♥️🍕😹</item>
         <item>So, let\'s get started!!!</item>
     </string-array>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="app_theme">App theme</string>
+    <string name="log_out">Log out</string>
+    <string name="here_goes_your_ad">Here goes your ad...</string>
+    <string name="notify_desc">If you want achieve the best experience of this app, please allow to show notifications. It\'ll let ToDoApp notify you, if your task is expired.</string>
+    <string name="skip">Skip</string>
+    <string name="oke">Oke!</string>
+    <string name="turn_later">You can turn them on in device settings later!</string>
+    <string name="enjoy_notifications">Enjoy notifications!</string>
+    <string name="drop_notify_prefs">Drop notification prefs</string>
+    <string name="submit">Submit</string>
 </resources>

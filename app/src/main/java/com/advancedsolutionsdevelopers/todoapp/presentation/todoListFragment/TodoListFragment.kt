@@ -1,13 +1,22 @@
 package com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment
 
+import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -23,13 +32,15 @@ import com.advancedsolutionsdevelopers.todoapp.presentation.MainActivity
 import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView.NavigationMode
 import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView.SwipeCallback
 import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView.TaskAdapter
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.SHOW_NOTIFICATIONS_KEY
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant.TOKEN_KEY
-import com.advancedsolutionsdevelopers.todoapp.utils.Constant.SP_NAME
 import com.advancedsolutionsdevelopers.todoapp.utils.cancelIfInUse
 import com.advancedsolutionsdevelopers.todoapp.utils.makeSnackbar
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 
 class TodoListFragment : Fragment() {
     @Inject
@@ -37,10 +48,12 @@ class TodoListFragment : Fragment() {
 
     @Inject
     lateinit var modelFactory: TasksListViewModelFactory
+
+    @Inject
+    lateinit var sp: SharedPreferences
     private lateinit var navController: NavController
     private var tasksAdapter: TaskAdapter? = null
     private var swipeCallback: SwipeCallback? = null
-    private lateinit var sharedPrefs: SharedPreferences
     private val viewModel: TasksListViewModel by lazy {
         ViewModelProvider(this, modelFactory)[TasksListViewModel::class.java]
     }
@@ -57,7 +70,6 @@ class TodoListFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         (activity as MainActivity).activityComponent.inject(this)
-        sharedPrefs = requireContext().getSharedPreferences(SP_NAME, Context.MODE_PRIVATE)
         startForResult = registerForActivityResult(
             PassportAuthContract(), callback
         )
@@ -72,12 +84,15 @@ class TodoListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        isAuthorized = sharedPrefs.contains(TOKEN_KEY)
+        isAuthorized = sp.contains(TOKEN_KEY)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navController = view.findNavController()
+        if (!sp.contains(SHOW_NOTIFICATIONS_KEY)) {
+            navController.navigate(R.id.action_todoListFragment_to_notificationPermFragment)
+        }
         tasksAdapter = TaskAdapter()
         swipeCallback = SwipeCallback(
             0,

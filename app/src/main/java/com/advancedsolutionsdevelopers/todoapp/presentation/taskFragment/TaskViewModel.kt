@@ -9,6 +9,7 @@ import com.advancedsolutionsdevelopers.todoapp.data.models.blankTodoItem
 import com.advancedsolutionsdevelopers.todoapp.domain.DeleteItemUseCase
 import com.advancedsolutionsdevelopers.todoapp.domain.GetItemUseCase
 import com.advancedsolutionsdevelopers.todoapp.domain.SaveItemUseCase
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.DEVICE_ID_KEY
 import com.advancedsolutionsdevelopers.todoapp.utils.DeadlineIdentifier
 import com.advancedsolutionsdevelopers.todoapp.utils.TimeFormatConverters
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +22,8 @@ import java.util.UUID
 class TaskViewModel(
     private val getItemUseCase: GetItemUseCase,
     private val deleteItemUseCase: DeleteItemUseCase,
-    private val saveItemUseCase: SaveItemUseCase
+    private val saveItemUseCase: SaveItemUseCase,
+    private val sp:SharedPreferences
 ) :
     ViewModel() {
     var isNew = false
@@ -56,7 +58,7 @@ class TaskViewModel(
             if (isNew) false else task.isCompleted,
             if (isNew) curDate else task.creationDate,
             curDate,
-            "dsaa",
+            sp.getString(DEVICE_ID_KEY,"")!!,
             false,
             DeadlineIdentifier().identify(
                 isNew,
