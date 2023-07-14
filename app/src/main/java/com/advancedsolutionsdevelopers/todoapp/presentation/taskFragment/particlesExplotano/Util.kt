@@ -52,5 +52,6 @@ fun MutableRect.scale(factor: Float) {
 
 private val random = Random()
 fun Float.randomTillZero() = this * random.nextFloat()
-fun randomInRange(min:Float,max:Float) = min + (max - min).randomTillZero()
-fun randomBoolean(trueProbabilityPercentage: Int) = random.nextFloat() < trueProbabilityPercentage/100f
+fun randomInRange(min: Float, max: Float) = min + (max - min).randomTillZero()
+fun randomBoolean(trueProbabilityPercentage: Int) =
+    random.nextFloat() < trueProbabilityPercentage / 100f

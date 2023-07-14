@@ -9,11 +9,13 @@ import android.text.format.DateFormat
 import android.view.View
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
+import androidx.compose.ui.graphics.toArgb
 import com.advancedsolutionsdevelopers.todoapp.R
 import com.advancedsolutionsdevelopers.todoapp.ToDoApp
 import com.advancedsolutionsdevelopers.todoapp.data.models.Priority
 import com.advancedsolutionsdevelopers.todoapp.data.models.TodoItem
 import com.advancedsolutionsdevelopers.todoapp.di.component.ApplicationComponent
+import com.advancedsolutionsdevelopers.todoapp.presentation.theme.redColor
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -128,8 +130,9 @@ fun View.actionSnackBar(
     action: () -> Unit,
     onCancel: () -> Unit = {}
 ): Snackbar {
-    val mainString = context.getString(R.string.delete) + " " + task.text
+    val mainString = context.getString(R.string.delete) + " \"" + task.text+"\""
     val job = CoroutineScope(Dispatchers.Main)
+    val startColor = redColor
     val sb = Snackbar.make(
         this,
         mainString,
@@ -144,7 +147,10 @@ fun View.actionSnackBar(
     sb.show()
     job.launch {
         for (i in delaySeconds downTo 1) {
-            sb.setText("$mainString $i")
+            with(startColor){
+                sb.setBackgroundTint(Color.rgb(red/i,green/i,blue/i))
+            }
+            sb.setText("$mainString in $i")
             delay(1000)
         }
         withContext(Dispatchers.IO) {

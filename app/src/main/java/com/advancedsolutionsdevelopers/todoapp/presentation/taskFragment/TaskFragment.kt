@@ -2,14 +2,13 @@ package com.advancedsolutionsdevelopers.todoapp.presentation.taskFragment
 
 
 import android.annotation.SuppressLint
-import android.app.DatePickerDialog
-import android.app.DatePickerDialog.OnDateSetListener
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +24,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -46,6 +44,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringArrayResource
@@ -58,8 +58,7 @@ import androidx.lifecycle.lifecycleScope
 import com.advancedsolutionsdevelopers.todoapp.R
 import com.advancedsolutionsdevelopers.todoapp.data.models.Priority
 import com.advancedsolutionsdevelopers.todoapp.presentation.MainActivity
-import com.advancedsolutionsdevelopers.todoapp.presentation.taskFragment.particlesExplotano.Explodable
-import com.advancedsolutionsdevelopers.todoapp.presentation.taskFragment.particlesExplotano.rememberExplosionController
+import com.advancedsolutionsdevelopers.todoapp.presentation.taskFragment.particlesExplotano.GenerateEmojiSplash
 import com.advancedsolutionsdevelopers.todoapp.presentation.theme.AppTheme
 import com.advancedsolutionsdevelopers.todoapp.presentation.theme.ToDoTypography
 import com.advancedsolutionsdevelopers.todoapp.presentation.theme.redColor
@@ -71,7 +70,6 @@ import com.advancedsolutionsdevelopers.todoapp.utils.dateStringToTimestamp
 import com.advancedsolutionsdevelopers.todoapp.utils.pickDateAndTime
 import com.advancedsolutionsdevelopers.todoapp.utils.str
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Calendar
 import javax.inject.Inject
@@ -126,7 +124,7 @@ class TaskFragment : Fragment() {
         with(model) {
             if (isEditMode) {
                 etText.value = task.text
-                priority = task.priority
+                priority.value = task.priority
                 switchChecked.value = task.deadlineDate != null
                 mDate.value =
                     converter.fromTimestamp(if (model.task.deadlineDate != null) model.task.deadlineDate!! else curDate)
@@ -264,50 +262,16 @@ class TaskFragment : Fragment() {
         }
     }
 
-    @Preview
-    @Composable
-    fun DropDownMenu() {
-        val priorities = stringArrayResource(R.array.priority)
-        var expanded by remember { mutableStateOf(false) }
-        Box {
-            TextButton(
-                onClick = { expanded = true },
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(
-                    start = 0.dp,
-                    top = 0.dp,
-                    end = 0.dp,
-                    bottom = 0.dp,
-                ),
-                shape = RectangleShape
-            ) {
-                Text(
-                    priorities[model.priority.ordinal], style = ToDoTypography.bodyMedium
-                )
-                Spacer(modifier = Modifier.weight(1f))
-            }
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                for (i in priorities.indices) {
-                    DropdownMenuItem(text = {
-                        Text(
-                            priorities[i], style = ToDoTypography.bodyMedium
-                        )
-                    }, onClick = {
-                        expanded = false
-                        model.priority = Priority.values()[i]
-                    })
-                }
-            }
-        }
-    }
-
     @OptIn(ExperimentalMaterial3Api::class)
     @Preview
     @Composable
-    private fun OhSheet(){
+    private fun OhSheet() {
         var showBottomSheet by remember { mutableStateOf(false) }
+        val icons = arrayOf("\uD83D\uDDFF", "⬇️", "‼️")
         val sheetState = rememberModalBottomSheetState()
         val priorities = stringArrayResource(R.array.priority)
+        val onTap by remember { model.priority }
+        val tapOffset by remember { mutableStateOf(Offset(0f, 0f)) }
         TextButton(
             onClick = { showBottomSheet = true },
             modifier = Modifier.fillMaxWidth(),
@@ -320,7 +284,7 @@ class TaskFragment : Fragment() {
             shape = RectangleShape
         ) {
             Text(
-                priorities[model.priority.ordinal], style = ToDoTypography.bodyMedium
+                priorities[model.priority.value.ordinal], style = ToDoTypography.bodyMedium
             )
             Spacer(modifier = Modifier.weight(1f))
         }
@@ -332,13 +296,21 @@ class TaskFragment : Fragment() {
                 sheetState = sheetState
             ) {
                 for (i in priorities.indices) {
-                    DropdownMenuItem(text = {
+                    val buttonColor = if (i == onTap.ordinal) {
+                        switchBackColor
+                    } else {
+                        Color.Transparent
+                    }
+                    DropdownMenuItem(modifier = Modifier.background(buttonColor), text = {
                         Text(
-                            priorities[i], style = ToDoTypography.bodyMedium
+                            priorities[i],
+                            style = ToDoTypography.bodyMedium,
                         )
+                        if (onTap.ordinal == i) {
+                            GenerateEmojiSplash(emoji = icons[i], tapOffset, count = 25)
+                        }
                     }, onClick = {
-                        showBottomSheet = false
-                        model.priority = Priority.values()[i]
+                        model.priority.value = Priority.values()[i]
                     })
                 }
             }

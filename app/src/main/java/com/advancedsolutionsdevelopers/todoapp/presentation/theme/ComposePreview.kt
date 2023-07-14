@@ -2,9 +2,9 @@ package com.advancedsolutionsdevelopers.todoapp.presentation.theme
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,12 +21,12 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,8 +55,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.advancedsolutionsdevelopers.todoapp.R
-import com.advancedsolutionsdevelopers.todoapp.data.models.Priority
-import com.advancedsolutionsdevelopers.todoapp.utils.getThemeAttrColor
+import com.advancedsolutionsdevelopers.todoapp.presentation.taskFragment.particlesExplotano.GenerateEmojiSplash
 
 class ComposePreview {
     @OptIn(ExperimentalTextApi::class)
@@ -90,7 +90,11 @@ class ComposePreview {
                     size = canvasQuadrantSize,
                     topLeft = Offset(canvasQuadrantSize.width * 3, 0f)
                 )
-                drawText(textMeasurer, "light\nBackground", Offset(canvasQuadrantSize.width * 3, 0f))
+                drawText(
+                    textMeasurer,
+                    "light\nBackground",
+                    Offset(canvasQuadrantSize.width * 3, 0f)
+                )
             }
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val canvasQuadrantSize = Size(size.width / 4F, size.height / 8F)
@@ -109,7 +113,11 @@ class ComposePreview {
                     topLeft = Offset(0f, canvasQuadrantSize.height)
 
                 )
-                drawText(textMeasurer, "lightSurface\nVariant", Offset(0f, canvasQuadrantSize.height))
+                drawText(
+                    textMeasurer,
+                    "lightSurface\nVariant",
+                    Offset(0f, canvasQuadrantSize.height)
+                )
             }
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val canvasQuadrantSize = Size(size.width / 4F, size.height / 8F)
@@ -266,14 +274,16 @@ class ComposePreview {
             }
         }
     }
+
     @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES)
     @Preview(name = "Light Mode", uiMode = Configuration.UI_MODE_NIGHT_NO)
     @Composable
-    private fun PreviewTasksScreenWithTheme(){
+    private fun PreviewTasksScreenWithTheme() {
         AppTheme {
             TasksScreen()
         }
     }
+
     @SuppressLint("UnrememberedMutableState")
     @OptIn(ExperimentalMaterial3Api::class)
     @Preview
@@ -308,7 +318,7 @@ class ComposePreview {
                             /*model.saveItem(isEditMode)
                             requireActivity().supportFragmentManager.popBackStack()*/
                         }) {
-                            Text(stringResource(R.string.save))
+                            Text(stringResource(R.string.save), style = ToDoTypography.bodyMedium)
                         }
                     }
                     )
@@ -331,12 +341,20 @@ class ComposePreview {
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
-                    Text(text = stringResource(R.string.priority))
-                    DropDownMenu()
+                    Text(
+                        text = stringResource(R.string.priority),
+                        modifier = Modifier.padding(top = 10.dp),
+                        style = ToDoTypography.bodyMedium
+                    )
+                    OhSheet()
                     Divider()
                     Row {
                         Column {
-                            Text(text = stringResource(R.string.do_until))
+                            Text(
+                                text = stringResource(R.string.do_until),
+                                modifier = Modifier.padding(top = 10.dp),
+                                style = ToDoTypography.bodyMedium
+                            )
                             if (switchChecked) {
                                 TextButton(
                                     onClick = { /*generateCalendarDialog().show()*/ },
@@ -377,7 +395,7 @@ class ComposePreview {
                         )
                         Text(
                             text = stringResource(R.string.delete),
-                            color = delColor
+                            color = delColor, style = ToDoTypography.bodyMedium
                         )
                     }
                 }
@@ -385,41 +403,56 @@ class ComposePreview {
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Preview
     @Composable
-    private fun DropDownMenu() {
-        val mockedViewModelPriority=0//model.priority.ordinal
+    private fun OhSheet() {
+        var showBottomSheet by remember { mutableStateOf(false) }
+        val icons = arrayOf("\uD83D\uDDFF", "⬇️", "‼️")
+        val sheetState = rememberModalBottomSheetState()
         val priorities = stringArrayResource(R.array.priority)
-        var expanded by remember { mutableStateOf(false) }
-        var menuText by remember { mutableStateOf(priorities[mockedViewModelPriority]) }
-        Box {
-            TextButton(
-                onClick = { expanded = true },
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(
-                    start = 0.dp,
-                    top = 0.dp,
-                    end = 0.dp,
-                    bottom = 0.dp,
-                ),
-                shape = RectangleShape
+        val onTap by remember { mutableStateOf(0)/*model.priority*/ }
+        val tapOffset by remember { mutableStateOf(Offset(0f, 0f)) }
+        TextButton(
+            onClick = { showBottomSheet = true },
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(
+                start = 0.dp,
+                top = 0.dp,
+                end = 0.dp,
+                bottom = 0.dp,
+            ),
+            shape = RectangleShape
+        ) {
+            Text(
+                priorities[onTap/*model.priority.value.ordinal*/], style = ToDoTypography.bodyMedium
+            )
+            Spacer(modifier = Modifier.weight(1f))
+        }
+        if (showBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showBottomSheet = false
+                },
+                sheetState = sheetState
             ) {
-                Text(menuText)
-                Spacer(modifier = Modifier.weight(1f))
-            }
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                for (i in 0..2) {
-                    DropdownMenuItem(
-                        text = { Text(priorities[i]) },
-                        onClick = {
-                            expanded = false
-                            menuText = priorities[i]
-                            //model.priority = Priority.values()[i]
+                for (i in priorities.indices) {
+                    val buttonColor = if (i == onTap) {
+                        switchBackColor
+                    } else {
+                        Color.Transparent
+                    }
+                    DropdownMenuItem(modifier = Modifier.background(buttonColor), text = {
+                        Text(
+                            priorities[i],
+                            style = ToDoTypography.bodyMedium,
+                        )
+                        if (onTap == i) {
+                            GenerateEmojiSplash(emoji = icons[i], tapOffset, count = 25)
                         }
-                    )
+                    }, onClick = {
+                        //model.priority.value = Priority.values()[i]
+                    })
                 }
             }
         }
