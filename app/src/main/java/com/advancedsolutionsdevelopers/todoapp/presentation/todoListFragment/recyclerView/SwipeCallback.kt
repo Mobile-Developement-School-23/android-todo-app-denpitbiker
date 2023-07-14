@@ -6,11 +6,14 @@ import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.advancedsolutionsdevelopers.todoapp.R
+import com.advancedsolutionsdevelopers.todoapp.utils.actionSnackBar
 import com.advancedsolutionsdevelopers.todoapp.utils.getThemeAttrColor
+import com.google.android.material.snackbar.Snackbar
 import kotlin.math.roundToInt
 
 class SwipeCallback(
@@ -18,12 +21,13 @@ class SwipeCallback(
     swipeDirs: Int,
     private val tasksAdapter: TaskAdapter,
     private val context: Context,
-    private val swipeRef: SwipeRefreshLayout
+    private val swipeRef: SwipeRefreshLayout,
+    private val coordinatorLayout: CoordinatorLayout
 ) : ItemTouchHelper.SimpleCallback(
-    dragDirs,
-    swipeDirs
+    dragDirs, swipeDirs
 ) {
     private val textMargin = context.resources.getDimension(R.dimen.text_margin).roundToInt()
+    private val snackbars = hashMapOf<Snackbar, () -> Unit>()
     var isAppbarExpanded = false
     override fun onMove(
         recyclerView: RecyclerView,
@@ -39,9 +43,17 @@ class SwipeCallback(
             viewHolder.isCompleteChBox.callOnClick()
         } else {
             if (viewHolder.adapterPosition < tasksAdapter.currentList.size - 1) {
-                tasksAdapter.currentList[viewHolder.adapterPosition].onDelete()
+                val item = tasksAdapter.currentList[viewHolder.adapterPosition]
+                cancelBars()
+                snackbars[coordinatorLayout.actionSnackBar(item.todoItem, 5, item.onDelete) {
+                    notifyItemChanged(viewHolder as TaskViewHolder)
+                }] = item.onDelete
             }
         }
+    }
+
+    private fun notifyItemChanged(viewHolder: TaskViewHolder) {
+        tasksAdapter.notifyItemChanged(viewHolder.adapterPosition)
     }
 
     override fun onChildDraw(
@@ -63,14 +75,12 @@ class SwipeCallback(
         }
         val isDeleteSwipe = viewHolder.itemView.x < 0//Режим отрисовки бэкграунда при свайпе
         val icon = AppCompatResources.getDrawable(
-            context,
-            if (isDeleteSwipe) R.drawable.delete else R.drawable.check
+            context, if (isDeleteSwipe) R.drawable.delete else R.drawable.check
         )
         drawOnCanvas(c, isDeleteSwipe, viewHolder.itemView, icon!!, dX)
         icon.draw(c)
         super.onChildDraw(
-            c, recyclerView, viewHolder,
-            dX, dY, actionState, isCurrentlyActive
+            c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive
         )
 
     }
@@ -87,19 +97,19 @@ class SwipeCallback(
         }
     }
 
+    private fun cancelBars() {
+        for (i in snackbars.keys) {
+            i.dismiss()
+            snackbars[i]!!.invoke()
+        }
+        snackbars.clear()
+    }
+
     private fun drawDelSwipe(
-        c: Canvas,
-        v: View,
-        dX: Float,
-        icon: Drawable,
-        verticalMargin: Int,
-        color: Int
+        c: Canvas, v: View, dX: Float, icon: Drawable, verticalMargin: Int, color: Int
     ) {
         c.clipRect(
-            v.right.toFloat(),
-            v.top.toFloat(),
-            v.right.toFloat() + dX,
-            v.bottom.toFloat()
+            v.right.toFloat(), v.top.toFloat(), v.right.toFloat() + dX, v.bottom.toFloat()
         )
         c.drawColor(color)
         icon.bounds = Rect(
@@ -111,12 +121,7 @@ class SwipeCallback(
     }
 
     private fun drawCheckSwipe(
-        c: Canvas,
-        v: View,
-        dX: Float,
-        icon: Drawable,
-        verticalMargin: Int,
-        color: Int
+        c: Canvas, v: View, dX: Float, icon: Drawable, verticalMargin: Int, color: Int
     ) {
         c.clipRect(0f, v.top.toFloat(), dX, v.bottom.toFloat())
         c.drawColor(color)

@@ -22,10 +22,10 @@ class RegisterResultCallback @Inject constructor(
     ActivityResultCallback<YandexAuthToken?> {
     private val changeConnectionModeUseCase = ChangeConnectionModeUseCase(repository)
     private val syncWithServerUseCase = SyncWithServerUseCase(repository)
-    override fun onActivityResult(it: YandexAuthToken?) {
-        if (it != null) {
+    override fun onActivityResult(result: YandexAuthToken?) {
+        if (result != null) {
             context.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE).edit()
-                .putString(TOKEN_KEY, it.value).apply()
+                .putString(TOKEN_KEY, result.value).apply()
             Toast.makeText(context, "Authorized!", Toast.LENGTH_LONG).show()
         } else {
             Toast.makeText(context, "Oke, login later!", Toast.LENGTH_LONG).show()

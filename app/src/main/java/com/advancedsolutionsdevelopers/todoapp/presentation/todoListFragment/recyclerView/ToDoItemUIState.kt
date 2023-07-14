@@ -6,5 +6,5 @@ data class ToDoItemUIState(
     val todoItem: TodoItem,
     val onDelete: () -> Unit = {},
     val onCheck: () -> Unit = {},
-    val onClick: ()-> Unit = {}
+    val onClick: () -> Unit = {}
 )

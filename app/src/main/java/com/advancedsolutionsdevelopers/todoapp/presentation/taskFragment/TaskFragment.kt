@@ -30,6 +30,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -38,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +58,8 @@ import androidx.lifecycle.lifecycleScope
 import com.advancedsolutionsdevelopers.todoapp.R
 import com.advancedsolutionsdevelopers.todoapp.data.models.Priority
 import com.advancedsolutionsdevelopers.todoapp.presentation.MainActivity
+import com.advancedsolutionsdevelopers.todoapp.presentation.taskFragment.particlesExplotano.Explodable
+import com.advancedsolutionsdevelopers.todoapp.presentation.taskFragment.particlesExplotano.rememberExplosionController
 import com.advancedsolutionsdevelopers.todoapp.presentation.theme.AppTheme
 import com.advancedsolutionsdevelopers.todoapp.presentation.theme.ToDoTypography
 import com.advancedsolutionsdevelopers.todoapp.presentation.theme.redColor
@@ -200,7 +204,7 @@ class TaskFragment : Fragment() {
                         text = stringResource(R.string.priority),
                         style = ToDoTypography.bodyMedium
                     )
-                    DropDownMenu()
+                    OhSheet()
                     Divider()
                     Row {
                         Column {
@@ -283,13 +287,57 @@ class TaskFragment : Fragment() {
                 Spacer(modifier = Modifier.weight(1f))
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                for (i in 0..2) {
+                for (i in priorities.indices) {
                     DropdownMenuItem(text = {
                         Text(
                             priorities[i], style = ToDoTypography.bodyMedium
                         )
                     }, onClick = {
                         expanded = false
+                        model.priority = Priority.values()[i]
+                    })
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Preview
+    @Composable
+    private fun OhSheet(){
+        var showBottomSheet by remember { mutableStateOf(false) }
+        val sheetState = rememberModalBottomSheetState()
+        val priorities = stringArrayResource(R.array.priority)
+        TextButton(
+            onClick = { showBottomSheet = true },
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(
+                start = 0.dp,
+                top = 0.dp,
+                end = 0.dp,
+                bottom = 0.dp,
+            ),
+            shape = RectangleShape
+        ) {
+            Text(
+                priorities[model.priority.ordinal], style = ToDoTypography.bodyMedium
+            )
+            Spacer(modifier = Modifier.weight(1f))
+        }
+        if (showBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showBottomSheet = false
+                },
+                sheetState = sheetState
+            ) {
+                for (i in priorities.indices) {
+                    DropdownMenuItem(text = {
+                        Text(
+                            priorities[i], style = ToDoTypography.bodyMedium
+                        )
+                    }, onClick = {
+                        showBottomSheet = false
                         model.priority = Priority.values()[i]
                     })
                 }

@@ -1,22 +1,12 @@
 package com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -36,7 +26,6 @@ import com.advancedsolutionsdevelopers.todoapp.utils.Constant.SHOW_NOTIFICATIONS
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant.TOKEN_KEY
 import com.advancedsolutionsdevelopers.todoapp.utils.cancelIfInUse
 import com.advancedsolutionsdevelopers.todoapp.utils.makeSnackbar
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -99,7 +88,8 @@ class TodoListFragment : Fragment() {
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT,
             tasksAdapter!!,
             requireContext(),
-            binding.swipeRefreshLayout
+            binding.swipeRefreshLayout,
+            binding.coordLayout
         )
         setupListeners()
         ItemTouchHelper(swipeCallback!!).attachToRecyclerView(binding.rv)

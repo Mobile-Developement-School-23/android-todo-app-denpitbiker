@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -48,27 +50,43 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import com.advancedsolutionsdevelopers.todoapp.R
+import com.advancedsolutionsdevelopers.todoapp.data.network.PassportAuthContract
+import com.advancedsolutionsdevelopers.todoapp.presentation.MainActivity
 import com.advancedsolutionsdevelopers.todoapp.presentation.theme.AppTheme
 import com.advancedsolutionsdevelopers.todoapp.presentation.theme.ToDoTypography
 import com.advancedsolutionsdevelopers.todoapp.presentation.theme.lightOnPrimary
 import com.advancedsolutionsdevelopers.todoapp.presentation.theme.redColor
 import com.advancedsolutionsdevelopers.todoapp.presentation.theme.switchBackColor
+import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.RegisterResultCallback
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant.SHOW_NOTIFICATIONS_KEY
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant.SP_NAME
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant.THEME_CODE_KEY
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant.TOKEN_KEY
+import javax.inject.Inject
 
 class SettingsFragment : Fragment() {
-    private lateinit var sp: SharedPreferences
+    @Inject
+    lateinit var callback: RegisterResultCallback
+
+    @Inject
+    lateinit var sp: SharedPreferences
     private val themeButtonState = mutableStateOf(0)
-    private var isAuthorized = true
+    private var isAuthorized = mutableStateOf(true)
+    private var startForResult: ActivityResultLauncher<Any?>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        sp = requireContext().getSharedPreferences(SP_NAME, Context.MODE_PRIVATE)
+        (activity as MainActivity).activityComponent.inject(this)
         themeButtonState.value = sp.getInt(THEME_CODE_KEY, -1)
         if (themeButtonState.value == -1) themeButtonState.value++
-        isAuthorized = sp.contains(TOKEN_KEY)
+        startForResult = registerForActivityResult(
+            PassportAuthContract(), callback
+        )
+    }
+
+    override fun onResume() {
+        super.onResume()
+        isAuthorized.value = sp.contains(TOKEN_KEY)
     }
 
     override fun onCreateView(
@@ -96,6 +114,7 @@ class SettingsFragment : Fragment() {
     @Preview
     @Composable
     private fun SettingsScreen() {
+        val isAuth by remember {isAuthorized}
         Scaffold(
             topBar = {
                 Surface(shadowElevation = 10.dp) {
@@ -125,36 +144,37 @@ class SettingsFragment : Fragment() {
                         style = ToDoTypography.titleMedium
                     )
                     ThemeSwitch()
-                    if (isAuthorized) {
-                        CompositionLocalProvider(
-                            LocalMinimumInteractiveComponentEnforcement provides false,
+                    CompositionLocalProvider(
+                        LocalMinimumInteractiveComponentEnforcement provides false,
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .wrapContentHeight()
+                                .padding(vertical = 30.dp),
+                            elevation = CardDefaults.cardElevation(5.dp)
                         ) {
-                            Card(
-                                modifier = Modifier
-                                    .wrapContentHeight()
-                                    .padding(vertical = 30.dp),
-                                elevation = CardDefaults.cardElevation(5.dp)
+                            TextButton(
+                                onClick = {
+                                    sp.edit().remove(SHOW_NOTIFICATIONS_KEY).apply()
+                                    requireActivity().supportFragmentManager.popBackStack()
+                                },
+                                Modifier.align(Alignment.CenterHorizontally)
                             ) {
-                                TextButton(
-                                    onClick = {
-                                        sp.edit().remove(SHOW_NOTIFICATIONS_KEY).apply()
-                                        requireActivity().supportFragmentManager.popBackStack()
-                                    },
-                                    Modifier.align(Alignment.CenterHorizontally)
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.drop_notify_prefs),
-                                        color = redColor,
-                                        style = ToDoTypography.bodyMedium
-                                    )
-                                }
+                                Text(
+                                    text = stringResource(R.string.drop_notify_prefs),
+                                    color = redColor,
+                                    style = ToDoTypography.bodyMedium
+                                )
                             }
-                            Card(
-                                modifier = Modifier
-                                    .width(100.dp)
-                                    .wrapContentHeight(),
-                                elevation = CardDefaults.cardElevation(5.dp)
-                            ) {
+                        }
+
+                        Card(
+                            modifier = Modifier
+                                .width(100.dp)
+                                .wrapContentHeight(),
+                            elevation = CardDefaults.cardElevation(5.dp)
+                        ) {
+                            if (isAuth) {
                                 TextButton(
                                     onClick = {
                                         sp.edit().remove(TOKEN_KEY).apply()
@@ -169,7 +189,20 @@ class SettingsFragment : Fragment() {
                                         style = ToDoTypography.bodyMedium
                                     )
                                 }
-
+                            } else {
+                                TextButton(
+                                    onClick = {
+                                        startForResult!!.launch(null)
+                                    },
+                                    Modifier
+                                        .align(Alignment.CenterHorizontally)
+                                        .fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.log_in),
+                                        style = ToDoTypography.bodyMedium
+                                    )
+                                }
                             }
                         }
                     }

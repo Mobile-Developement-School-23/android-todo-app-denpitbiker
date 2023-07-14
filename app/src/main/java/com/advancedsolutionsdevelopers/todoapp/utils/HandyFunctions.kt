@@ -12,9 +12,16 @@ import androidx.annotation.ColorInt
 import com.advancedsolutionsdevelopers.todoapp.R
 import com.advancedsolutionsdevelopers.todoapp.ToDoApp
 import com.advancedsolutionsdevelopers.todoapp.data.models.Priority
+import com.advancedsolutionsdevelopers.todoapp.data.models.TodoItem
 import com.advancedsolutionsdevelopers.todoapp.di.component.ApplicationComponent
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.util.Calendar
@@ -98,8 +105,9 @@ fun createDateString(calendar: Calendar): String = createDateString(
     calendar.get(Calendar.HOUR_OF_DAY),
     calendar.get(Calendar.MINUTE)
 )
-fun LocalDateTime.str():String{
-    return this.toString().replace('T',' ')
+
+fun LocalDateTime.str(): String {
+    return this.toString().replace('T', ' ')
 }
 
 fun dateStringToTimestamp(dateString: String): Long {
@@ -107,8 +115,42 @@ fun dateStringToTimestamp(dateString: String): Long {
     val date = dateFormat.parse(dateString)
     return date?.time?.div(1000) ?: 0L
 }
+
 fun Priority.toTextFormat(context: Context): String = when (this) {
     Priority.low -> context.getString(R.string.low)
     Priority.basic -> context.getString(R.string.standard)
     Priority.important -> context.getString(R.string.high)
+}
+
+fun View.actionSnackBar(
+    task: TodoItem,
+    delaySeconds: Int,
+    action: () -> Unit,
+    onCancel: () -> Unit = {}
+): Snackbar {
+    val mainString = context.getString(R.string.delete) + " " + task.text
+    val job = CoroutineScope(Dispatchers.Main)
+    val sb = Snackbar.make(
+        this,
+        mainString,
+        Snackbar.LENGTH_INDEFINITE
+    ).setTextColor(Color.WHITE)
+    sb.isGestureInsetBottomIgnored = true
+    sb.setAction(context.getString(R.string.cancel)) {
+        job.cancel()
+        onCancel()
+        sb.dismiss()
+    }
+    sb.show()
+    job.launch {
+        for (i in delaySeconds downTo 1) {
+            sb.setText("$mainString $i")
+            delay(1000)
+        }
+        withContext(Dispatchers.IO) {
+            action()
+        }
+        sb.dismiss()
+    }
+    return sb
 }
