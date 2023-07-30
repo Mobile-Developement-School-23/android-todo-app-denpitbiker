@@ -25,13 +25,31 @@
     <string name="saving">Saving...</string>
     <string name="error">Error</string>
     <string-array name="priority">
-        <item>Standard</item>
+        <item>🗿Standard</item>
         <item>⬇️Low</item>
         <item>‼️HIGH</item>
+    </string-array>
+    <string-array name="themes">
+        <item>System</item>
+        <item>Light</item>
+        <item>Dark</item>
     </string-array>
     <string-array name="view_pager_text">
         <item>Hello!\n Let me introduce you my ToDo App:)</item>
         <item>It\'s made with ♥️🍕😹</item>
         <item>So, let\'s get started!!!</item>
     </string-array>
+    <string name="app_theme">App theme</string>
+    <string name="log_out">Log out</string>
+    <string name="here_goes_your_ad">Here goes your ad...</string>
+    <string name="notify_desc">If you want achieve the best experience of this app, please allow to show notifications. It\'ll let ToDoApp notify you, if your task is expired.</string>
+    <string name="skip">Skip</string>
+    <string name="oke">Oke!</string>
+    <string name="turn_later">You can turn them on in device settings later!</string>
+    <string name="enjoy_notifications">Enjoy notifications!</string>
+    <string name="drop_notify_prefs">Drop notification prefs</string>
+    <string name="submit">Submit</string>
+    <string name="postpone">Postpone for day</string>
+    <string name="cancel">Cancel</string>
+    <string name="log_in">Log in</string>
 </resources>

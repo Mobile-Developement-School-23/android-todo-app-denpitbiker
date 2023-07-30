@@ -6,6 +6,8 @@ import com.advancedsolutionsdevelopers.todoapp.di.module.AppModule
 import com.advancedsolutionsdevelopers.todoapp.di.ApplicationScope
 import com.advancedsolutionsdevelopers.todoapp.di.module.DatabaseModule
 import com.advancedsolutionsdevelopers.todoapp.di.module.NetworkModule
+import com.advancedsolutionsdevelopers.todoapp.presentation.receiver.NotificationReceiver
+import com.advancedsolutionsdevelopers.todoapp.presentation.receiver.PostponeReceiver
 import dagger.BindsInstance
 import dagger.Component
 //компонент приложения
@@ -19,4 +21,8 @@ interface ApplicationComponent {
 
     fun mainActivityComponent(): MainActivityComponent
     fun inject(app: ToDoApp)
+
+    fun inject(receiver: NotificationReceiver)
+
+    fun inject(receiver: PostponeReceiver)
 }

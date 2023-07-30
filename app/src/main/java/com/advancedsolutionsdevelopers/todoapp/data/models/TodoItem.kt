@@ -24,7 +24,7 @@ fun blankTodoItem(): TodoItem {
     return TodoItem(
         "",
         "",
-        Priority.low,
+        Priority.basic,
         false,
         0L,
         0L,

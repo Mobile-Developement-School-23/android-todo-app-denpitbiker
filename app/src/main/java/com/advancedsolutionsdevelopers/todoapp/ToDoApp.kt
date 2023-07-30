@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.provider.Settings
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.work.BackoffPolicy
 import androidx.work.Configuration
 import androidx.work.Constraints
@@ -17,6 +18,7 @@ import com.advancedsolutionsdevelopers.todoapp.di.component.ApplicationComponent
 import com.advancedsolutionsdevelopers.todoapp.di.component.DaggerApplicationComponent
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant.SP_NAME
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.THEME_CODE_KEY
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant.WORKER_NAME
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -44,6 +46,7 @@ class ToDoApp : Application() {
         applicationComponent.inject(this)
         WorkManager.initialize(this, configurationWorker)
         val sp = getSharedPreferences(SP_NAME, Context.MODE_PRIVATE)
+        AppCompatDelegate.setDefaultNightMode(sp.getInt(THEME_CODE_KEY, -1))
         if (!sp.contains(Constant.DEVICE_ID_KEY)) {
             sp.edit().putString(
                 Constant.DEVICE_ID_KEY, Settings.Secure.getString(

@@ -1,23 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/todoListFragment">
 
     <fragment
         android:id="@+id/todoListFragment"
         android:name="com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.TodoListFragment"
-        android:label="TodoListFragment" >
+        android:label="TodoListFragment">
         <action
             android:id="@+id/action_todoListFragment_to_taskFragment"
             app:destination="@id/taskFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:popExitAnim="@anim/nav_default_exit_anim" />
+            app:enterAnim="@anim/from_bottom"
+            app:exitAnim="@anim/to_top"
+            app:popEnterAnim="@anim/from_top"
+            app:popExitAnim="@anim/to_bottom" />
+        <action
+            android:id="@+id/action_todoListFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment"
+            app:enterAnim="@anim/from_top"
+            app:exitAnim="@anim/to_bottom"
+            app:popEnterAnim="@anim/from_bottom"
+            app:popExitAnim="@anim/to_top" />
+        <action
+            android:id="@+id/action_todoListFragment_to_notificationPermFragment"
+            app:destination="@id/notificationPermFragment"
+            app:enterAnim="@anim/from_top"
+            app:exitAnim="@anim/to_bottom"
+            app:popEnterAnim="@anim/from_bottom"
+            app:popExitAnim="@anim/to_top" />
     </fragment>
     <fragment
         android:id="@+id/taskFragment"
         android:name="com.advancedsolutionsdevelopers.todoapp.presentation.taskFragment.TaskFragment"
-        android:label="fragment_task"
-        tools:layout="@layout/fragment_task" />
+        android:label="fragment_task" />
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.advancedsolutionsdevelopers.todoapp.presentation.settingsFragment.SettingsFragment"
+        android:label="fragment_settings" />
+    <fragment
+        android:id="@+id/notificationPermFragment"
+        android:name="com.advancedsolutionsdevelopers.todoapp.presentation.notificationsPermFragment.NotificationPermFragment"
+        android:label="NotificationPermFragment" />
 </navigation>

@@ -1,7 +1,6 @@
 package com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -23,13 +22,14 @@ import com.advancedsolutionsdevelopers.todoapp.presentation.MainActivity
 import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView.NavigationMode
 import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView.SwipeCallback
 import com.advancedsolutionsdevelopers.todoapp.presentation.todoListFragment.recyclerView.TaskAdapter
+import com.advancedsolutionsdevelopers.todoapp.utils.Constant.SHOW_NOTIFICATIONS_KEY
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant.TOKEN_KEY
-import com.advancedsolutionsdevelopers.todoapp.utils.Constant.SP_NAME
 import com.advancedsolutionsdevelopers.todoapp.utils.cancelIfInUse
 import com.advancedsolutionsdevelopers.todoapp.utils.makeSnackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 
 class TodoListFragment : Fragment() {
     @Inject
@@ -37,10 +37,12 @@ class TodoListFragment : Fragment() {
 
     @Inject
     lateinit var modelFactory: TasksListViewModelFactory
+
+    @Inject
+    lateinit var sp: SharedPreferences
     private lateinit var navController: NavController
     private var tasksAdapter: TaskAdapter? = null
     private var swipeCallback: SwipeCallback? = null
-    private lateinit var sharedPrefs: SharedPreferences
     private val viewModel: TasksListViewModel by lazy {
         ViewModelProvider(this, modelFactory)[TasksListViewModel::class.java]
     }
@@ -57,7 +59,6 @@ class TodoListFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         (activity as MainActivity).activityComponent.inject(this)
-        sharedPrefs = requireContext().getSharedPreferences(SP_NAME, Context.MODE_PRIVATE)
         startForResult = registerForActivityResult(
             PassportAuthContract(), callback
         )
@@ -72,21 +73,23 @@ class TodoListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        isAuthorized = sharedPrefs.contains(TOKEN_KEY)
-        binding.internetButton.setImageResource(if (isAuthorized) R.drawable.offline else R.drawable.online)
+        isAuthorized = sp.contains(TOKEN_KEY)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navController = view.findNavController()
+        if (!sp.contains(SHOW_NOTIFICATIONS_KEY)) {
+            navController.navigate(R.id.action_todoListFragment_to_notificationPermFragment)
+        }
         tasksAdapter = TaskAdapter()
-        binding.internetButton.setImageResource(if (isAuthorized) R.drawable.offline else R.drawable.online)
         swipeCallback = SwipeCallback(
             0,
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT,
             tasksAdapter!!,
             requireContext(),
-            binding.swipeRefreshLayout
+            binding.swipeRefreshLayout,
+            binding.coordLayout
         )
         setupListeners()
         ItemTouchHelper(swipeCallback!!).attachToRecyclerView(binding.rv)
@@ -166,7 +169,6 @@ class TodoListFragment : Fragment() {
         if (isAuthorized) {
             isAuthorized = false
             viewModel.changeConnectionMode(dropTable = !isAuthorized)
-            binding.internetButton.setImageResource(R.drawable.online)
         } else startForResult!!.launch(null)
     }
 
@@ -175,8 +177,9 @@ class TodoListFragment : Fragment() {
             isCheckedTasksVisible = !isCheckedTasksVisible
             changeItemsVisibility()
         }
-        binding.internetButton.setOnClickListener {
-            changeInternetMode()
+        binding.settingsButton.setOnClickListener {
+            //changeInternetMode()
+            navController.navigate(R.id.action_todoListFragment_to_settingsFragment)
         }
         binding.floatingActionButton.setOnClickListener {
             navController.navigate(R.id.action_todoListFragment_to_taskFragment, Bundle())

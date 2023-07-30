@@ -5,19 +5,19 @@
     <color name="support_separator">#33FFFFFF</color>
     <color name="support_overlay">#52000000</color>
 
-    <color name="label_primary">#FFFFFF</color>
+    <color name="label_primary">#FFFFFFFF</color>
     <color name="label_secondary">#99FFFFFF</color>
     <color name="label_tertiary">#66FFFFFF</color>
     <color name="label_disable">#26FFFFFF</color>
 
-    <color name="color_red">#FF453A</color>
-    <color name="color_green">#32D74B</color>
-    <color name="color_blue">#0A84FF</color>
-    <color name="color_gray">#8E8E93</color>
-    <color name="color_gray_lighter">#48484A</color>
-    <color name="color_gray_white">#FFFFFF</color>
+    <color name="color_red">#FFFF453A</color>
+    <color name="color_green">#FF32D74B</color>
+    <color name="color_blue">#FF0A84FF</color>
+    <color name="color_gray">#FF8E8E93</color>
+    <color name="color_gray_lighter">#FF48484A</color>
+    <color name="color_gray_white">#FFFFFFFF</color>
 
-    <color name="back_primary">#161618</color>
-    <color name="back_secondary">#252528</color>
-    <color name="back_elevated">#3C3C3F</color>
+    <color name="back_primary">#FF161618</color>
+    <color name="back_secondary">#FF252528</color>
+    <color name="back_elevated">#FF3C3C3F</color>
 </resources>

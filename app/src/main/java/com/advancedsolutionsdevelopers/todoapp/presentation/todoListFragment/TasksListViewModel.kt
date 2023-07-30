@@ -101,7 +101,7 @@ class TasksListViewModel(
         },
             onClick = {
                 updNavigation(item)
-            })
+            } )
     }
 
     private fun updNavigation(item: TodoItem) {

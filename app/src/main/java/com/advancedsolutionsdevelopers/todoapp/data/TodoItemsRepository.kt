@@ -8,6 +8,7 @@ import com.advancedsolutionsdevelopers.todoapp.data.network.NetCallback
 import com.advancedsolutionsdevelopers.todoapp.data.network.ToDoService
 import com.advancedsolutionsdevelopers.todoapp.data.network.models.SingleItemResponse
 import com.advancedsolutionsdevelopers.todoapp.di.ApplicationScope
+import com.advancedsolutionsdevelopers.todoapp.domain.IAlarmScheduler
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant.LKR_KEY
 import com.advancedsolutionsdevelopers.todoapp.utils.Constant.TOKEN_KEY
 import com.advancedsolutionsdevelopers.todoapp.utils.TimeFormatConverters
@@ -28,7 +29,7 @@ import javax.inject.Inject
 
 class TodoItemsRepository @Inject constructor(
     private val table: ToDoItemDao, private val service: ToDoService, val sp: SharedPreferences,
-    val connectManager: ConnectivityManager
+    val connectManager: ConnectivityManager,     private val scheduler: IAlarmScheduler
 ) {
     private val converter = TimeFormatConverters()
     private val merger = ItemsMerger()
@@ -74,28 +75,43 @@ class TodoItemsRepository @Inject constructor(
 
     private suspend fun syncAttempt() {
         val response = service.getTasksList()
-        updateRevision(response.body()!!.revision!!)
-        val x = merger.merge(response.body()!!.list, table.getAllNoFlow())
-        for (i in x.deletedOnDevice) {
-            deleteTask(i, true)
+        val revision = response.body()!!.revision!!
+        if (revision > sp.getInt(LKR_KEY, 0)) {
+            updateRevision(revision)
+            dropTableAndInsertList(response.body()!!.list)
+        } else {
+            val x = merger.merge(response.body()!!.list, table.getAllNoFlow())
+            for (i in x.deletedOnDevice) {
+                deleteTask(i, true)
+            }
+            for (i in x.newItemsFromDB) {
+                service.addTask(SingleItemResponse(i))
+            }
+            for (i in x.newItemsFromServ) {
+                scheduler.scheduleNotification(i)
+                table.insertItem(i)
+            }
+            for (i in x.needUpdate) {
+                updateTask(i, true)
+            }
         }
-        for (i in x.newItemsFromDB) {
-            service.addTask(SingleItemResponse(i))
-        }
-        for (i in x.newItemsFromServ) {
-            table.insertItem(i)
-        }
-        for (i in x.needUpdate) {
-            updateTask(i, true)
-        }
+    }
+
+    private suspend fun dropTableAndInsertList(list: List<TodoItem>) {
+        table.deleteTable()
+        table.insertAll(list)
     }
 
     fun getTaskById(id: String): Flow<TodoItem?> {
         return table.getItemById(id)
     }
+    fun getTaskByIdNoFlow(id: String): TodoItem? {
+        return table.getItemByIdNoFlow(id)
+    }
 
     suspend fun addTask(todoItem: TodoItem, mute: Boolean = false) {
         table.insertItem(todoItem)
+        scheduler.scheduleNotification(todoItem)
         if (isOnlineMode) {
             try {
                 handleResponse(service.addTask(SingleItemResponse(todoItem)), mute)
@@ -108,6 +124,7 @@ class TodoItemsRepository @Inject constructor(
 
     suspend fun updateTask(todoItem: TodoItem, mute: Boolean = false) {
         table.updateItem(todoItem)
+        scheduler.scheduleNotification(todoItem)
         if (isOnlineMode) {
             try {
                 handleResponse(service.updateTask(todoItem.id, SingleItemResponse(todoItem)), mute)
@@ -118,6 +135,7 @@ class TodoItemsRepository @Inject constructor(
     }
 
     suspend fun deleteTask(todoItem: TodoItem, mute: Boolean = false) {
+        scheduler.cancelNotification(todoItem)
         if (isOnlineMode && isOnline.get()) {
             table.deleteItem(todoItem)
             try {
